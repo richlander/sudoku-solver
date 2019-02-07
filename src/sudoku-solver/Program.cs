@@ -13,7 +13,7 @@ namespace sudoku_solver
 
             var tests = PuzzleTest.Get().ToArray();
 
-            var lastSolver = new LastEntrySolver(tests[1]);
+            var lastSolver = new LastEntrySolver(tests[0]);
 
             foreach (var solution in lastSolver.GetSolutions())
             {
