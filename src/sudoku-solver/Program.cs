@@ -13,9 +13,9 @@ namespace sudoku_solver
 
             var tests = PuzzleTest.Get().ToArray();
 
-            var lastSolver = new LastEntrySolver(tests[0]);
+            var lastSolver = new LastEntrySolver(tests[1]);
 
-            foreach (var solution in lastSolver.GetSolutions())
+            foreach (var solution in lastSolver.FindRowSolutions())
             {
                 if (solution.Solved)
                 {
