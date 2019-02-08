@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class LastEntrySolver
+public class LastEntrySolver : ISolver
 {
     private Puzzle _puzzle;
     public LastEntrySolver(Puzzle puzzle)
@@ -9,30 +9,15 @@ public class LastEntrySolver
         _puzzle = puzzle;
     }
 
-    public IEnumerable<Solution> FindBoxSolutions()
+    public IEnumerable<Solution> FindSolutions()
     {
         for (int i = 0; i < 9; i++)
         {
             yield return SolveBox(i);
-        }
-    }
-
-    public IEnumerable<Solution> FindColumnSolutions()
-    {
-        for (int i = 0; i < 9; i++)
-        {
+            yield return SolveRow(i);
             yield return SolveColumn(i);
         }
     }
-
-    public IEnumerable<Solution> FindRowSolutions()
-    {
-        for (int i = 0; i < 9; i++)
-        {
-            yield return SolveRow(i);
-        }
-    }
-
 
     private Solution SolveColumn(int index)
     {
@@ -41,47 +26,7 @@ public class LastEntrySolver
         solution.Box = index;
 
         var column = _puzzle.GetColumn(index);
-
-        var values = new bool[10];
-        var unsolvedCells = 0;
-        var unsolvedCell = 99;
-
-        for (int i = 0; i < 9; i++)
-        {
-            int value = column[i];
-            if (value > 0)
-            {
-                values[value] = true;
-            }
-            else
-            {
-                unsolvedCells++;
-                unsolvedCell = i;
-            }
-            if (unsolvedCells > 1)
-            {
-                solution.Solved = false;
-                return solution;
-            }
-        }
-
-        if (unsolvedCells == 0)
-        {
-            solution.Solved = false;
-            return solution;
-        }
-
-        for (int i = 1; i < 10; i++)
-        {
-            if (!values[i])
-            {
-                solution.Value = i;
-                break;
-            }
-        }
-        solution.Solved = true;
-        solution.Cell = unsolvedCell;
-        return solution;
+        return SolveLine(column, index);
     }
 
     private Solution SolveRow(int index)
@@ -90,6 +35,13 @@ public class LastEntrySolver
         solution.Box = index;
 
         var row = _puzzle.GetRow(index);
+        return SolveLine(row, index);
+    }
+
+    private Solution SolveLine(Line line, int index)
+    {
+        var solution = new Solution();
+        solution.Box = index;
 
         var values = new bool[10];
         var unsolvedCells = 0;
@@ -97,7 +49,7 @@ public class LastEntrySolver
 
         for (int i = 0; i <9;i++)
         {
-            int value = row[i];
+            int value = line.Segment[i];
             if (value > 0)
             {
                 values[value] = true;
