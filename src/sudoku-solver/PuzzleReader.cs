@@ -1,3 +1,4 @@
+/*
 using System;
 using System.IO;
 using System.Text.Json;
@@ -23,7 +24,8 @@ public class PuzzleReader
             }
         }
 
-        var puzzle = new Puzzle(puzzleArray.AsMemory());
+        var puzzle = Puzzle.ReadPuzzle(puzzleArray.AsMemory());
         return puzzle;
     }
 }
+*/
