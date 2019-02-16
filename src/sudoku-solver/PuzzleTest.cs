@@ -26,7 +26,7 @@ public static class PuzzleTest
                 puzzle[index] = value;
                 index++;
             }
-            var p = new Puzzle(puzzle);
+            var p = Puzzle.ReadPuzzle(puzzle);
             yield return p;
         }
     }

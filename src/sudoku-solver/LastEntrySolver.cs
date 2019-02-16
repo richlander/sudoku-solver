@@ -13,36 +13,46 @@ public class LastEntrySolver : ISolver
     {
         for (int i = 0; i < 9; i++)
         {
-            yield return SolveBox(i);
-            yield return SolveRow(i);
-            yield return SolveColumn(i);
+            if (_puzzle.SolvedForBox[i] == 8) yield return SolveBox(i);
+            if (_puzzle.SolvedForRow[i] == 8) yield return SolveRow(i);
+            if (_puzzle.SolvedForColumn[i] == 8) yield return SolveColumn(i);
         }
+    }
+
+    public bool CheckEffective()
+    {
+        for (int i = 0; i < 9; i++)
+        {
+            if (_puzzle.SolvedForBox[i] == 8) return true;
+            if (_puzzle.SolvedForRow[i] == 8) return true;
+            if (_puzzle.SolvedForColumn[i] == 8) return true;
+        }
+        return false;
     }
 
     private Solution SolveColumn(int index)
     {
 
         var solution = new Solution();
-        solution.Box = index;
+        solution.Index = index;
+        solution.Type = SequenceType.Column;
 
         var column = _puzzle.GetColumn(index);
-        return SolveLine(column, index);
+        return SolveLine(column, solution);
     }
 
     private Solution SolveRow(int index)
     {
         var solution = new Solution();
-        solution.Box = index;
+        solution.Index = index;
+        solution.Type = SequenceType.Row;
 
         var row = _puzzle.GetRow(index);
-        return SolveLine(row, index);
+        return SolveLine(row, solution);
     }
 
-    private Solution SolveLine(Line line, int index)
+    private Solution SolveLine(Line line, Solution solution)
     {
-        var solution = new Solution();
-        solution.Box = index;
-
         var values = new bool[10];
         var unsolvedCells = 0;
         var unsolvedCell = 99;
@@ -88,7 +98,8 @@ public class LastEntrySolver : ISolver
     private Solution SolveBox(int index)
     {
         var solution = new Solution();
-        solution.Box= index;
+        solution.Type = SequenceType.Box;
+        solution.Index= index;
 
         var box = _puzzle.GetBox(index);
 

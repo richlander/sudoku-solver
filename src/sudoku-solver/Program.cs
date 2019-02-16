@@ -20,28 +20,41 @@ namespace sudoku_solver
                 new LastEntrySolver(puzzle)
             };
          
-            TrySolvers(puzzle,solvers);
+            var attempts = 1;
+            while (TrySolvers(puzzle, solvers) > 0)
+            {
+                attempts++;
+            }
+
+            Console.WriteLine("No more solutions found.");
+            Console.WriteLine($"Tried {attempts} attempts to solve puzzle with {solvers.Count} solvers.");
         }
 
-        static void TrySolvers(Puzzle puzzle, IEnumerable<ISolver> solvers)
+        static int TrySolvers(Puzzle puzzle, IReadOnlyCollection<ISolver> solvers)
         {
+            var success = 0;
             foreach (var solver in solvers)
             {
+                if (!solver.CheckEffective())
+                {
+                    continue;
+                }
                 foreach (var solution in solver.FindSolutions())
                 {
                     if (solution.Solved)
                     {
-                        Console.WriteLine($"Solved {solution.Value} @ box {solution.Box + 1}; cell {solution.Cell + 1}");
-                        puzzle.UpdateCell(solution);                        
+                        Console.WriteLine($"Solved box {solution.Index + 1}; cell {solution.Cell + 1} -> {solution.Value}");
+                        puzzle.Update(solution);
+                        success++;                        
 
-                        if (puzzle.IsFull())
+                        if (puzzle.IsSolved())
                         {
                             Console.WriteLine("Puzzle is solved");
                         }
                     }
                 }
             }
-
+            return success;
         }
     }
 }
