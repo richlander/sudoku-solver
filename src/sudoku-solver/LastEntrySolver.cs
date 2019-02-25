@@ -40,9 +40,9 @@ namespace sudoku_solver
         private bool IsRowEffective(int row) => _puzzle.SolvedForRow[row] == _effectiveCount;
         private bool IsColumnEffective(int column) => _puzzle.SolvedForColumn[column] == _effectiveCount;
         
-        private Solution SolveColumn(int column)
+        private Solution SolveColumn(int index)
         {
-            var line = _puzzle.GetColumn(column);
+            var line = _puzzle.GetColumn(index);
             (bool solved, int cell, int value) = SolveLine(line);
             
             var solution = new Solution
@@ -52,17 +52,18 @@ namespace sudoku_solver
 
             if (solved)
             {
-                solution.Column = cell;
-                solution.Row = column;
+                solution.Column = index;
+                solution.Row = cell;
+                solution.Value = value;
                 return solution;
             }
 
             return solution;
         }
 
-        private Solution SolveRow(int row)
+        private Solution SolveRow(int index)
         {
-            var line = _puzzle.GetRow(row);
+            var line = _puzzle.GetRow(index);
             (bool solved, int cell, int value) = SolveLine(line);
 
             var solution = new Solution
@@ -73,7 +74,8 @@ namespace sudoku_solver
             if (solved)
             {
                 solution.Column = cell;
-                solution.Row = row;
+                solution.Row = index;
+                solution.Value = value;
                 return solution;
             }
 
@@ -120,15 +122,14 @@ namespace sudoku_solver
             return unknownValue;
         }
 
-        private Solution SolveBox(int box)
+        private Solution SolveBox(int index)
         {
-            var solution = new Solution();
-            solution.Type = SequenceType.Box;
-            solution.Column= box;
+            var box = _puzzle.GetBox(index);
 
-            var box = _puzzle.GetBox(box);
-
-
+            var solution = new Solution
+            {
+                Solved = false
+            };
             var values = new bool[10];
             var unsolvedCells = 0;
             var unsolvedCell = 99;
@@ -159,13 +160,12 @@ namespace sudoku_solver
                 }
                 if (unsolvedCells > 1)
                 {
-                    solution.Solved = false;
                     return solution;
                 }
             }
+            
             if (unsolvedCells == 0)
             {
-                solution.Solved = false;
                 return solution;
             }
             
