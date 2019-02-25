@@ -22,7 +22,7 @@ namespace sudoku_solver
             }
         }
 
-        public bool CheckEffective()
+        public bool IsEffective()
         {
             for (int i = 0; i < 9; i++)
             {
@@ -39,32 +39,53 @@ namespace sudoku_solver
         private bool IsBoxEffective(int box) => _puzzle.SolvedForBox[box] == _effectiveCount;
         private bool IsRowEffective(int row) => _puzzle.SolvedForRow[row] == _effectiveCount;
         private bool IsColumnEffective(int column) => _puzzle.SolvedForColumn[column] == _effectiveCount;
+        
         private Solution SolveColumn(int column)
         {
+            var line = _puzzle.GetColumn(column);
+            (bool solved, int cell, int value) = SolveLine(line);
+            
+            var solution = new Solution
+            {
+                Solved = solved
+            };
 
-            var solution = new Solution();
-            solution.Column = column;
-            solution.Type = SequenceType.Column;
+            if (solved)
+            {
+                solution.Column = cell;
+                solution.Row = column;
+                return solution;
+            }
 
-            var column = _puzzle.GetColumn(column);
-            return SolveLine(column, solution);
+            return solution;
         }
 
         private Solution SolveRow(int row)
         {
-            var solution = new Solution();
-            solution.Column = row;
-            solution.Type = SequenceType.Row;
+            var line = _puzzle.GetRow(row);
+            (bool solved, int cell, int value) = SolveLine(line);
 
-            var row = _puzzle.GetRow(row);
-            return SolveLine(row, solution);
+            var solution = new Solution
+            {
+                Solved = solved
+            };
+
+            if (solved)
+            {
+                solution.Column = cell;
+                solution.Row = row;
+                return solution;
+            }
+
+            return solution;
         }
 
-        private Solution SolveLine(Line line, Solution solution)
+        private (bool solved, int cell, int value) SolveLine(Line line)
         {
             var values = new bool[10];
             var unsolvedCells = 0;
-            var unsolvedCell = 99;
+            var unsolvedCell = 0;
+            var unknownValue = (false, 0, 0);
 
             for (int i = 0; i <9;i++)
             {
@@ -76,32 +97,27 @@ namespace sudoku_solver
                 else
                 {
                     unsolvedCells++;
-                    unsolvedCell = i;
                 }
                 if (unsolvedCells > 1)
                 {
-                    solution.Solved = false;
-                    return solution;
+                    return unknownValue;
                 }
             }
 
             if (unsolvedCells == 0)
             {
-                solution.Solved = false;
-                return solution;
+                return unknownValue;
             }
 
             for (int i = 1; i < 10; i++)
             {
                 if (!values[i])
                 {
-                    solution.Value = i;
-                    break;
+                    return (true, unsolvedCell, i);
                 }
             }
-            solution.Solved = true;
-            solution.Cell = unsolvedCell;
-            return solution;
+
+            return unknownValue;
         }
 
         private Solution SolveBox(int box)
