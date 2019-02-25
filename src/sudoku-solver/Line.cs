@@ -1,27 +1,30 @@
 using System;
 
-public ref struct Line
+namespace sudoku_solver
 {
-    public Span<int> Segment;
-
-    public int GetUnsolved()
+    public ref struct Line
     {
-        int count = 0;
+        public Span<int> Segment;
 
-        count += Count(Segment);
-        return count;
-
-        int Count(Span<int> row)
+        public int GetUnsolvedCount()
         {
-            var count = 0;
-            for (int i = 0; i < row.Length; i++)
-            {
-                if (row[i] != 0)
-                {
-                    count++;
-                }
-            }
+            int count = 0;
+
+            count += Count(Segment);
             return count;
+
+            int Count(Span<int> row)
+            {
+                var sum = 0;
+                for (int i = 0; i < row.Length; i++)
+                {
+                    if (row[i] != 0)
+                    {
+                        sum++;
+                    }
+                }
+                return sum;
+            }
         }
     }
 }

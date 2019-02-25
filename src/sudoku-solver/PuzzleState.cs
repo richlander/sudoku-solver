@@ -1,6 +1,9 @@
-public struct PuzzleState
+namespace sudoku_solver
 {
-    public bool Valid;
-    public bool Solved;
-    public string Description;
+    public struct PuzzleState
+    {
+        public bool Valid;
+        public bool Solved;
+        public string Description;
+    }
 }

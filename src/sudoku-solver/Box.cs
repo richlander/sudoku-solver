@@ -5,7 +5,7 @@ public ref struct Box
     public Span<int> InsideRow;
     public Span<int> LastRow;
 
-    public int GetUnsolved()
+    public int GetUnsolvedCount()
     {
         int count = 0;
 
@@ -16,15 +16,15 @@ public ref struct Box
 
         int Count(Span<int> row)
         {
-            var count = 0;
+            var sum = 0;
             for (int i = 0;i <row.Length; i++)
             {
                 if (row[i] != 0)
                 {
-                    count++;
+                    sum++;
                 }
             }
-            return count;
+            return sum;
         }
     }
 }

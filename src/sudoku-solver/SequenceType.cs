@@ -1,7 +1,10 @@
-public enum SequenceType
+namespace sudoku_solver
 {
-    Unknown,
-    Box,
-    Row,
-    Column
+    public enum SequenceType
+    {
+        Unknown,
+        Box,
+        Row,
+        Column
+    }
 }

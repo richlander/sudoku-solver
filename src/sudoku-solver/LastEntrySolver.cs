@@ -1,159 +1,169 @@
 using System;
 using System.Collections.Generic;
 
-public class LastEntrySolver : ISolver
+namespace sudoku_solver
 {
-    private Puzzle _puzzle;
-    public LastEntrySolver(Puzzle puzzle)
+    public class LastEntrySolver : ISolver
     {
-        _puzzle = puzzle;
-    }
-
-    public IEnumerable<Solution> FindSolutions()
-    {
-        for (int i = 0; i < 9; i++)
+        private Puzzle _puzzle;
+        private readonly int _effectiveCount = 8;
+        public LastEntrySolver(Puzzle puzzle)
         {
-            if (_puzzle.SolvedForBox[i] == 8) yield return SolveBox(i);
-            if (_puzzle.SolvedForRow[i] == 8) yield return SolveRow(i);
-            if (_puzzle.SolvedForColumn[i] == 8) yield return SolveColumn(i);
+            _puzzle = puzzle;
         }
-    }
 
-    public bool CheckEffective()
-    {
-        for (int i = 0; i < 9; i++)
+        public IEnumerable<Solution> FindSolution()
         {
-            if (_puzzle.SolvedForBox[i] == 8) return true;
-            if (_puzzle.SolvedForRow[i] == 8) return true;
-            if (_puzzle.SolvedForColumn[i] == 8) return true;
+            for (int i = 0; i < 9; i++)
+            {
+                if (IsBoxEffective(i)) yield return SolveBox(i);
+                if (IsColumnEffective(i)) yield return SolveColumn(i);
+                if (IsRowEffective(i)) yield return SolveRow(i);
+            }
         }
-        return false;
-    }
 
-    private Solution SolveColumn(int index)
-    {
-
-        var solution = new Solution();
-        solution.Index = index;
-        solution.Type = SequenceType.Column;
-
-        var column = _puzzle.GetColumn(index);
-        return SolveLine(column, solution);
-    }
-
-    private Solution SolveRow(int index)
-    {
-        var solution = new Solution();
-        solution.Index = index;
-        solution.Type = SequenceType.Row;
-
-        var row = _puzzle.GetRow(index);
-        return SolveLine(row, solution);
-    }
-
-    private Solution SolveLine(Line line, Solution solution)
-    {
-        var values = new bool[10];
-        var unsolvedCells = 0;
-        var unsolvedCell = 99;
-
-        for (int i = 0; i <9;i++)
+        public bool CheckEffective()
         {
-            int value = line.Segment[i];
-            if (value > 0)
+            for (int i = 0; i < 9; i++)
             {
-                values[value] = true;
+                if (IsBoxEffective(i)    ||
+                    IsColumnEffective(i) ||
+                    IsRowEffective(i))
+                    {
+                        return true;
+                    }
             }
-            else
+            return false;
+        }
+
+        private bool IsBoxEffective(int box) => _puzzle.SolvedForBox[box] == _effectiveCount;
+        private bool IsRowEffective(int row) => _puzzle.SolvedForRow[row] == _effectiveCount;
+        private bool IsColumnEffective(int column) => _puzzle.SolvedForColumn[column] == _effectiveCount;
+        private Solution SolveColumn(int column)
+        {
+
+            var solution = new Solution();
+            solution.Column = column;
+            solution.Type = SequenceType.Column;
+
+            var column = _puzzle.GetColumn(column);
+            return SolveLine(column, solution);
+        }
+
+        private Solution SolveRow(int row)
+        {
+            var solution = new Solution();
+            solution.Column = row;
+            solution.Type = SequenceType.Row;
+
+            var row = _puzzle.GetRow(row);
+            return SolveLine(row, solution);
+        }
+
+        private Solution SolveLine(Line line, Solution solution)
+        {
+            var values = new bool[10];
+            var unsolvedCells = 0;
+            var unsolvedCell = 99;
+
+            for (int i = 0; i <9;i++)
             {
-                unsolvedCells++;
-                unsolvedCell = i;
+                int value = line.Segment[i];
+                if (value > 0)
+                {
+                    values[value] = true;
+                }
+                else
+                {
+                    unsolvedCells++;
+                    unsolvedCell = i;
+                }
+                if (unsolvedCells > 1)
+                {
+                    solution.Solved = false;
+                    return solution;
+                }
             }
-            if (unsolvedCells > 1)
+
+            if (unsolvedCells == 0)
             {
                 solution.Solved = false;
                 return solution;
             }
-        }
 
-        if (unsolvedCells == 0)
-        {
-            solution.Solved = false;
+            for (int i = 1; i < 10; i++)
+            {
+                if (!values[i])
+                {
+                    solution.Value = i;
+                    break;
+                }
+            }
+            solution.Solved = true;
+            solution.Cell = unsolvedCell;
             return solution;
         }
 
-        for (int i = 1; i < 10; i++)
+        private Solution SolveBox(int box)
         {
-            if (!values[i])
-            {
-                solution.Value = i;
-                break;
-            }
-        }
-        solution.Solved = true;
-        solution.Cell = unsolvedCell;
-        return solution;
-    }
+            var solution = new Solution();
+            solution.Type = SequenceType.Box;
+            solution.Column= box;
 
-    private Solution SolveBox(int index)
-    {
-        var solution = new Solution();
-        solution.Type = SequenceType.Box;
-        solution.Index= index;
-
-        var box = _puzzle.GetBox(index);
+            var box = _puzzle.GetBox(box);
 
 
-        var values = new bool[10];
-        var unsolvedCells = 0;
-        var unsolvedCell = 99;
-        for (int i = 0; i < 9; i++)
-        {
-            int value;
-            if (i < 3)
+            var values = new bool[10];
+            var unsolvedCells = 0;
+            var unsolvedCell = 99;
+            for (int i = 0; i < 9; i++)
             {
-                value = box.FirstRow[i];
-            }
-            else if (i <6)
-            {
-                value = box.InsideRow[i-3];
-            }
-            else
-            {
-                value = box.LastRow[i-6];
-            }
+                int value;
+                if (i < 3)
+                {
+                    value = box.FirstRow[i];
+                }
+                else if (i <6)
+                {
+                    value = box.InsideRow[i-3];
+                }
+                else
+                {
+                    value = box.LastRow[i-6];
+                }
 
-            if (value > 0)
-            {
-                values[value] = true;
+                if (value > 0)
+                {
+                    values[value] = true;
+                }
+                else
+                {
+                    unsolvedCells++;
+                    unsolvedCell = i;
+                }
+                if (unsolvedCells > 1)
+                {
+                    solution.Solved = false;
+                    return solution;
+                }
             }
-            else
-            {
-                unsolvedCells++;
-                unsolvedCell = i;
-            }
-            if (unsolvedCells > 1)
+            if (unsolvedCells == 0)
             {
                 solution.Solved = false;
                 return solution;
             }
-        }
-        if (unsolvedCells == 0)
-        {
-            solution.Solved = false;
+            
+            for (int i = 1; i < 10; i++)
+            {
+                if (!values[i])
+                {
+                    solution.Value = i;
+                    break;
+                }
+            }
+            solution.Solved = true;
+            solution.Cell = unsolvedCell;
             return solution;
         }
-        
-        for (int i = 1; i < 10; i++)
-        {
-            if (!values[i])
-            {
-                solution.Value = i;
-                break;
-            }
-        }
-        solution.Solved = true;
-        solution.Cell = unsolvedCell;
-        return solution;
     }
- }
+}

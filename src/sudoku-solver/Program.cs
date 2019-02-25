@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using static System.Console;
 
 namespace sudoku_solver
 {
@@ -20,41 +21,21 @@ namespace sudoku_solver
                 new LastEntrySolver(puzzle)
             };
          
-            var attempts = 1;
-            while (TrySolvers(puzzle, solvers) > 0)
+            foreach ((var solution, var attempts) in puzzle.TrySolvers(solvers))
             {
-                attempts++;
-            }
-
-            Console.WriteLine("No more solutions found.");
-            Console.WriteLine($"Tried {attempts} attempts to solve puzzle with {solvers.Count} solvers.");
-        }
-
-        static int TrySolvers(Puzzle puzzle, IReadOnlyCollection<ISolver> solvers)
-        {
-            var success = 0;
-            foreach (var solver in solvers)
-            {
-                if (!solver.CheckEffective())
+                if (solution.Solved)
                 {
-                    continue;
+                    WriteLine($"Solved cell: {}");
+                    Console.WriteLine($"Solved box {solution.Index + 1}; cell {solution.Cell + 1} -> {solution.Value}");
+
                 }
-                foreach (var solution in solver.FindSolutions())
+                else
                 {
-                    if (solution.Solved)
-                    {
-                        Console.WriteLine($"Solved box {solution.Index + 1}; cell {solution.Cell + 1} -> {solution.Value}");
-                        puzzle.Update(solution);
-                        success++;                        
-
-                        if (puzzle.IsSolved())
-                        {
-                            Console.WriteLine("Puzzle is solved");
-                        }
-                    }
+                    Console.WriteLine("No more solutions found");
+                    Console.WriteLine($"Tried {attempts} attempts to solve puzzle.");
                 }
             }
-            return success;
         }
+
     }
 }

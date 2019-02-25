@@ -1,7 +1,10 @@
 using System.Collections.Generic;
 
-public interface ISolver
+namespace sudoku_solver
 {
-    IEnumerable<Solution> FindSolutions();
-    bool CheckEffective();
+    public interface ISolver
+    {
+        IEnumerable<Solution> FindSolution();
+        bool IsEffective();
+    }
 }

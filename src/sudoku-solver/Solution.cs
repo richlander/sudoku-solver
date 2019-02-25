@@ -1,13 +1,11 @@
-public struct Solution
+namespace sudoku_solver
 {
-    public SequenceType Type;
-    public int Index;
-    public int Cell;
-    public int Value;
-    public bool Solved;
-}
-
-public enum State
-{
-    
+    public struct Solution
+    {
+        public SequenceType Type;
+        public int Column;
+        public int Row;
+        public int Value;
+        public bool Solved;
+    }
 }
