@@ -6,8 +6,7 @@ namespace sudoku_solver
     public class Puzzle
     {
         private Memory<int> _puzzle;
-        public ReadOnlyMemory<int> Values = new int[] {1,2,3,4,5,6,7,8,9};
-        public int UnsolvedMarker = 0;
+        public static readonly int UnsolvedMarker = 0;
         public int TotalsCells = 81;
         private Puzzle(Memory<int> puzzle)
         {
@@ -51,6 +50,7 @@ namespace sudoku_solver
                 attempts += attempts_;
                 if (solved)
                 {
+                    Update(solution);
                     yield return (solution, attempts);
                     attempts = 0;
                 }
@@ -79,19 +79,6 @@ namespace sudoku_solver
                 return (new Solution{Solved=false}, attempts);
             }
         }
-
-        /*
-        
-                            Console.WriteLine($"Solved box {solution.Index + 1}; cell {solution.Cell + 1} -> {solution.Value}");
-                            Update(solution);
-                            solvedCells++;                        
-
-                            if (IsSolved())
-                            {
-                                Console.WriteLine("Puzzle is solved");
-                            }
-        */
-
         private PuzzleState Validate()
         {
             if (_puzzle.Length != TotalsCells)
@@ -107,22 +94,14 @@ namespace sudoku_solver
             for (int i = 0; i < 9; i++)
             {
                 // Process box i
-                var box = GetBox(i);
-                var boxSequence = new int[]
-                {
-                    box.FirstRow[0],
-                    box.FirstRow[1],
-                    box.FirstRow[2],
-                    box.InsideRow[0],
-                    box.InsideRow[1],
-                    box.InsideRow[2],
-                    box.LastRow[0],
-                    box.LastRow[1],
-                    box.LastRow[2]
-                };
-                var (boxCount, boxState) = ProcessSequence(boxSequence);
+                var boxSequence = GetBoxAsLine(i);
+                var (boxCount, boxState) = ProcessSequence(boxSequence.Segment);
                 if (!boxState.Valid) return boxState;
                 SolvedForBox[i] = boxCount;
+
+                // Update total count
+                // Only count one of box, row or column
+                Solved += boxCount;
 
                 // Process row i
                 var row = GetRow(i);
@@ -135,9 +114,6 @@ namespace sudoku_solver
                 var (columnCount, columnState) = ProcessSequence(column.Segment);
                 if (!columnState.Valid) return columnState;
                 SolvedForColumn[i] = columnCount;
-
-                // Update total solved count
-                Solved += boxCount + rowCount + columnCount;
             }
 
             return new PuzzleState
@@ -166,9 +142,7 @@ namespace sudoku_solver
                         values[value] = true;
                         count++;
                     }
-                    else if (value == UnsolvedMarker)
-                    {}
-                    else
+                    else if (value != UnsolvedMarker)
                     {
                         throw new Exception($"Unknown character: {value}");
                     }
@@ -180,30 +154,23 @@ namespace sudoku_solver
             }
         }
 
-        public Line GetRow(int index)
+        public Line GetRow(int row)
         {
-            var start = GetOffsetForRow(index);
+            var start = GetOffsetForRow(row);
 
-            return new Line
-            {
-                Segment = _puzzle.Slice(start, 9).Span 
-            };
+            return new Line(_puzzle.Slice(start, 9).Span);
         }
 
-        public Line GetColumn(int index)
+        public Line GetColumn(int column)
         {
-            var column = new int[9];
-            var grid = _puzzle.Span;
+            var col = new int[9];
             for (int i = 0;  i < 9; i++)
             {
-                var cIndex = index + (i * 9);
-                column[i] = grid[cIndex];
+                var cell = column + (i * 9);
+                col[i] = _puzzle.Span[cell];
             }
             
-            return new Line
-            {
-                Segment = column
-            };
+            return new Line(col);
         }
 
         public Box GetBox(int index)
@@ -212,12 +179,35 @@ namespace sudoku_solver
 
             var box = new Box
             {
-                FirstRow = _puzzle.Slice(start, 3).Span,
-                InsideRow = _puzzle.Slice(start + 9, 3).Span,
-                LastRow = _puzzle.Slice(start + 18, 3).Span
+                FirstRow = new Line(_puzzle.Slice(start, 3).Span),
+                InsideRow = new Line(_puzzle.Slice(start + 9, 3).Span),
+                LastRow = new Line(_puzzle.Slice(start + 18, 3).Span)
             };
 
             return box;
+        }
+
+        public Line GetBoxAsLine(int index)
+        {
+            var box = GetBox(index);
+            var boxSequence = new int[]
+            {
+                box.FirstRow[0],
+                box.FirstRow[1],
+                box.FirstRow[2],
+                box.InsideRow[0],
+                box.InsideRow[1],
+                box.InsideRow[2],
+                box.LastRow[0],
+                box.LastRow[1],
+                box.LastRow[2]
+            };
+            return new Line(boxSequence);
+        }
+
+        public static int GetBoxIndex(int row, int column)
+        {
+            return (row / 3) * 3 + (column % 3);
         }
 
         public void Update(Solution solution)
@@ -227,49 +217,42 @@ namespace sudoku_solver
                 return;
             }
 
-            if (solution.Type == SequenceType.Unknown)
-            {
-                throw new Exception("Something went wrong.");
-            }
-            else if (solution.Type == SequenceType.Box)
-            {
-                int start = GetOffsetForBox(solution.Index);
-                int element = start + (solution.Cell / 3) * 9 + solution.Cell % 3;
-                UpdateCell(element, solution.Value);
-                SolvedForBox[solution.Index]++;       
-            }
-            else if (solution.Type == SequenceType.Row)
-            {
-                int start = GetOffsetForRow(solution.Index);
-                int element = start + solution.Cell;
-                UpdateCell(element, solution.Value);
-                SolvedForColumn[solution.Index]++;
-            }
-            else if (solution.Type == SequenceType.Column)
-            {
-                var element = GetOffsetsForColumn(solution.Index)[solution.Cell];
-                UpdateCell(element, solution.Value);
-            }
+            UpdateCell(solution.Row, solution.Column, solution.Value);
         }
 
-        private void UpdateCell(int index, int value)
+        private void UpdateCell(int row, int column, int value)
         {
             var puzzle = _puzzle.Span;
+            var index = row * 9 + column;
             if (puzzle[index] != 0)
             {
                 throw new Exception("Something went wrong! Oops.");    
             }
 
             puzzle[index] = value;
-            Solved++;       
+            Solved++;
+            SolvedForRow[row]++;
+            SolvedForColumn[column]++;
+            var box = GetBoxIndex(row,column);
+            SolvedForBox[box]++;
         }
 
-        private int GetOffsetForBox(int index)
+        public static int GetOffsetForBox(int index)
         {
             return (index / 3) * 27 + (index % 3) * 3;
         }
 
-        private int[] GetOffsetsForColumn(int index)
+        public static (int row, int column) GetLocationForBoxCell(int box, int index)
+        {
+            var boxStart = Puzzle.GetOffsetForBox(box);
+            var boxCell = boxStart + index / 3 * 9 + index % 3;
+
+            var row = boxCell / 9;
+            var column = boxCell % 9;
+            return (row,column);
+        }
+
+        private static int[] GetOffsetForColumn(int index)
         {
             var column = new int[9];
             for (int i = 0; i < 9; i++)
@@ -280,7 +263,7 @@ namespace sudoku_solver
             return column;
         }
 
-        private int GetOffsetForRow(int index)
+        private static int GetOffsetForRow(int index)
         {
             return index * 9;
         }

@@ -1,30 +1,65 @@
 using System;
-public ref struct Box
+
+namespace sudoku_solver
 {
-    public Span<int> FirstRow;
-    public Span<int> InsideRow;
-    public Span<int> LastRow;
-
-    public int GetUnsolvedCount()
+    public ref struct Box
     {
-        int count = 0;
+        public Line FirstRow;
+        public Line InsideRow;
+        public Line LastRow;
 
-        count += Count(FirstRow);
-        count += Count(InsideRow);
-        count += Count(LastRow);
-        return count;
-
-        int Count(Span<int> row)
+        public int GetUnsolvedCount()
         {
-            var sum = 0;
-            for (int i = 0;i <row.Length; i++)
+            int count = 0;
+
+            count += Count(FirstRow);
+            count += Count(InsideRow);
+            count += Count(LastRow);
+            return count;
+
+            int Count(Line line)
             {
-                if (row[i] != 0)
+                var sum = 0;
+                for (int i = 0;i <line.Segment.Length; i++)
                 {
-                    sum++;
+                    if (line[i] != 0)
+                    {
+                        sum++;
+                    }
+                }
+                return sum;
+            }
+        }
+
+        public bool[] GetValues()
+        {
+            var values = new bool[10];
+            for(int i = 0; i < 9; i++)
+            {
+                int value;
+                if (i < 3)
+                {
+                    value = FirstRow[i];
+                }
+                else if (i <6)
+                {
+                    value = InsideRow[i-3];
+                }
+                else
+                {
+                    value = LastRow[i-6];
+                }
+
+                if (values[value] && value != 0)
+                {
+                    throw new Exception("Something went wrong");
+                }
+                else
+                {
+                    values[value] = true;
                 }
             }
-            return sum;
+            return values;
         }
     }
 }

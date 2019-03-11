@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 namespace sudoku_solver
 {
-    public class LastEntrySolver : ISolver
+    public class SingleEntrySolver : ISolver
     {
         private Puzzle _puzzle;
         private readonly int _effectiveCount = 8;
-        public LastEntrySolver(Puzzle puzzle)
+        public SingleEntrySolver(Puzzle puzzle)
         {
             _puzzle = puzzle;
         }
@@ -99,6 +99,7 @@ namespace sudoku_solver
                 else
                 {
                     unsolvedCells++;
+                    unsolvedCell = i;
                 }
                 if (unsolvedCells > 1)
                 {
@@ -177,8 +178,12 @@ namespace sudoku_solver
                     break;
                 }
             }
+
+            (var row, var column) = Puzzle.GetLocationForBoxCell(index, unsolvedCell);
+
             solution.Solved = true;
-            solution.Cell = unsolvedCell;
+            solution.Row = row;
+            solution.Column = column;
             return solution;
         }
     }
