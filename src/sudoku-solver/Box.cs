@@ -4,9 +4,16 @@ namespace sudoku_solver
 {
     public ref struct Box
     {
+        public Box(Span<int> puzzle)
+        {
+
+        }
         public Line FirstRow;
         public Line InsideRow;
         public Line LastRow;
+        public Line FirstColumn;
+        public Line InsideColumn;
+        public Line LastColumn;
 
         public int GetUnsolvedCount()
         {
@@ -60,6 +67,23 @@ namespace sudoku_solver
                 }
             }
             return values;
+        }
+
+        public Line AsLine()
+        {
+            var boxSequence = new int[]
+            {
+                FirstRow[0],
+                FirstRow[1],
+                FirstRow[2],
+                InsideRow[0],
+                InsideRow[1],
+                InsideRow[2],
+                LastRow[0],
+                LastRow[1],
+                LastRow[2]
+            };
+            return new Line(boxSequence);
         }
     }
 }
