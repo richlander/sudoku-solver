@@ -4,10 +4,7 @@ namespace sudoku_solver
 {
     public ref struct Box
     {
-        public Box(Span<int> puzzle)
-        {
 
-        }
         public Line FirstRow;
         public Line InsideRow;
         public Line LastRow;

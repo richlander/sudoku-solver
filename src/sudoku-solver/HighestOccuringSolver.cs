@@ -25,7 +25,7 @@ namespace sudoku_solver
 
         public Solution Solve(int index)
         {
-
+            return new Solution();
         }
 
         private Solution SolveBox(int index)
@@ -38,8 +38,7 @@ namespace sudoku_solver
             var avn = GetAdjectNeighboringBoxIndices(index);
             var highestValue = GetHighestOccuringValueNotInBox(box, avn);
             
-
-
+            return new Solution();
         }
 
         private int GetHighestOccuringValueNotInBox(Box box, int[] avn)
