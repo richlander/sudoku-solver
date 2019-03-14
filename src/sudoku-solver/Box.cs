@@ -1,38 +1,36 @@
 using System;
+using System.Diagnostics;
 
 namespace sudoku_solver
 {
     public ref struct Box
     {
+        private Puzzle _puzzle;
+        private ReadOnlySpan<int> _board;
+        private int _offset;
+        private int _index;
 
-        public Line FirstRow;
-        public Line InsideRow;
-        public Line LastRow;
-        public Line FirstColumn;
-        public Line InsideColumn;
-        public Line LastColumn;
+        public Box(Puzzle puzzle, int index)
+        {
+            _puzzle = puzzle;
+            _board = puzzle.Board.Span;
+            _offset = GetOffset(index);
+            _index = index;
+        }
+
+        public Line FirstRow => GetRow(0);
+        public Line InsideRow => GetRow(1);
+        public Line LastRow => GetRow(2);
+        public Line FirstColumn => GetColumn(0);
+        public Line InsideColumn => GetColumn(1);
+        public Line LastColumn => GetColumn(2);
 
         public int GetUnsolvedCount()
         {
-            int count = 0;
-
-            count += Count(FirstRow);
-            count += Count(InsideRow);
-            count += Count(LastRow);
-            return count;
-
-            int Count(Line line)
-            {
-                var sum = 0;
-                for (int i = 0;i <line.Segment.Length; i++)
-                {
-                    if (line[i] != 0)
-                    {
-                        sum++;
-                    }
-                }
-                return sum;
-            }
+            return 
+                FirstRow.GetUnsolvedCount() +
+                InsideRow.GetUnsolvedCount() +
+                LastRow.GetUnsolvedCount();
         }
 
         public bool[] GetValues()
@@ -81,6 +79,76 @@ namespace sudoku_solver
                 LastRow[2]
             };
             return new Line(boxSequence);
+        }
+
+        public ReadOnlySpan<int> AsValues()
+        {
+            var values = new int[9];
+            int count = 0;
+            count = ProcessValues(FirstRow.Segment, count);
+            count = ProcessValues(InsideRow.Segment, count);
+            count = ProcessValues(LastRow.Segment, count);
+
+            return values[0..count];
+
+            int ProcessValues(ReadOnlySpan<int> values0, int count)
+            {
+                foreach (int value in values0)
+                {
+                    if (value == 0 || values.AsSpan(0..count).Contains(value))
+                    {
+                        continue;
+                    }
+                    values[count] = value;
+                    count++;
+                }
+                return count;
+            }
+        }
+
+        private static int GetOffset(int index)
+        {
+            var offset = (index / 3) * 27 + (index % 3) * 3;
+            if (offset > 80)
+            {
+                Debugger.Break();
+            }
+            return offset;
+        }
+
+        public Line GetRow(int index)
+        {
+            return new Line(_board.Slice(_offset + (9 * index), 3));
+        }
+        
+        public Line GetColumn(int index)
+        {
+            var offset = _offset + index;
+
+            return new Line
+            {
+                Segment = new int[] 
+                {
+                    _board[offset],
+                    _board[offset + 9],
+                    _board[offset + 18]
+                }
+            };
+        }
+
+        public int GetOffsetForBox()
+        {
+            return (_index / 3) * 27 + (_index % 3) * 3;
+        }
+
+        public int GetRowOffsetForBox()
+        {
+            return (_index / 3) * 3;
+        }
+
+        public int GetColumnOffsetForBox()
+        {
+            return (_index % 3) * 3;
         }
     }
 }

@@ -1,87 +1,111 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
+using System.Linq;
+using static System.Console;
 
 namespace sudoku_solver
 {
     public class Puzzle
     {
-        private Memory<int> _puzzle;
+        private Memory<int> _board;
         public static readonly int UnsolvedMarker = 0;
         public int TotalsCells = 81;
-        private Puzzle(Memory<int> puzzle)
-        {
-            _puzzle = puzzle;
-        }
 
-        private int Solved {get; set;}
+        public int Solved {get; private set;}
         private int UnSolvedcells => TotalsCells - Solved;
         public int[] SolvedForBox {get; private set;}
         public int[] SolvedForRow { get; private set; }
         public int[] SolvedForColumn { get; private set; }
 
-        public static Puzzle ReadPuzzle(Memory<int> puzzle)
+        public Puzzle(string board) : this(ReadPuzzleAsString(board))
         {
-            var p = new Puzzle(puzzle);
-            p.Validate();
-            return p;
         }
+
+        public Puzzle(Memory<int> board)
+        {
+            _board = board;
+            Validate();
+        }
+
+        public ReadOnlyMemory<int> Board => _board;
 
         public bool IsSolved()
         {
+            var solved = false;
             if (Solved == TotalsCells && Validate().Solved)
             {
-                return true;
+                solved = true;
             }
             else if (Solved == TotalsCells)
             {
                 throw new Exception("Something went wrong");
             }
-            return false;
+            return solved;
         }
 
-        public IEnumerable<(Solution Solution, int attempts)> TrySolvers(IReadOnlyCollection<ISolver> solvers)
+        public bool Solve(ISolver solver)
         {
-            var solved = true;
-            var attempts = 0;
-            while (solved)
+            var solvers = new List<ISolver>()
             {
-                (var solution, var attempts_) = Solve(solvers);
-                solved = solution.Solved;
-                attempts += attempts_;
-                if (solved)
-                {
-                    Update(solution);
-                    yield return (solution, attempts);
-                    attempts = 0;
-                }
+                solver
+            };
+
+            foreach (var solution in TrySolvers(solvers))
+            {
             }
+            return IsSolved();
+        }
 
-            yield return (new Solution{Solved=false}, attempts);
-
-            (Solution solution, int attempts) Solve(IReadOnlyCollection<ISolver> solverCollection)
+        public bool Solve(IReadOnlyCollection<ISolver> solvers)
+        {
+            foreach(var solution in TrySolvers(solvers))
             {
-                var attempts = 0;
-                foreach (var solver in solverCollection)
+            }
+            return IsSolved();
+        }
+
+        public IEnumerable<Solution> TrySolvers(IReadOnlyCollection<ISolver> solvers)
+        {
+            var isEffective = true;
+            var solverCollection = solvers.ToArray();
+            var max = solverCollection.Length -1;
+            var index = 0;
+
+            // continue until
+            // IsEffective == false for all solvers
+            // for solvers that reports IsEffective == true but return no success
+            while (isEffective)
+            {
+                isEffective = false;
+                var solver = solverCollection[index];
+                if (solver.IsEffective())
                 {
-                    if (!solver.IsEffective())
-                    {
-                        continue;
-                    }
                     foreach (var solution in solver.FindSolution())
                     {
-                        attempts++;
                         if (solution.Solved)
                         {
-                            return (solution, attempts);
+                            Update(solution);
+                            isEffective = true;   
                         }
+                        yield return solution;
                     }
                 }
-                return (new Solution{Solved=false}, attempts);
+
+                if (isEffective && index != 0)
+                {
+                    index = 0;
+                }
+                else if (!isEffective && index < max)
+                {
+                    isEffective = true;
+                    index++;
+                }
             }
         }
-        private PuzzleState Validate()
+        public PuzzleState Validate()
         {
-            if (_puzzle.Length != TotalsCells)
+            if (_board.Length != TotalsCells)
             {
                 throw new Exception("Puzzle incorrect length");
             }
@@ -122,7 +146,7 @@ namespace sudoku_solver
                 Valid = true
             };
 
-            (int solvedCount, PuzzleState puzzleState) ProcessSequence(Span<int> sequence)
+            (int solvedCount, PuzzleState puzzleState) ProcessSequence(ReadOnlySpan<int> sequence)
             {
                 int count = 0;
                 var values = new bool[10];
@@ -158,7 +182,7 @@ namespace sudoku_solver
         {
             var start = GetOffsetForRow(row);
 
-            return new Line(_puzzle.Slice(start, 9).Span);
+            return new Line(_board.Slice(start, 9).Span);
         }
 
         public Line GetColumn(int column)
@@ -167,7 +191,7 @@ namespace sudoku_solver
             for (int i = 0;  i < 9; i++)
             {
                 var cell = column + (i * 9);
-                col[i] = _puzzle.Span[cell];
+                col[i] = _board.Span[cell];
             }
             
             return new Line(col);
@@ -175,16 +199,7 @@ namespace sudoku_solver
 
         public Box GetBox(int index)
         {
-            int start = GetOffsetForBox(index);
-
-            var box = new Box
-            {
-                FirstRow = new Line(_puzzle.Slice(start, 3).Span),
-                InsideRow = new Line(_puzzle.Slice(start + 9, 3).Span),
-                LastRow = new Line(_puzzle.Slice(start + 18, 3).Span)
-            };
-
-            return box;
+            return new Box(this, index);
         }
 
         public Line GetBoxAsLine(int index)
@@ -222,7 +237,7 @@ namespace sudoku_solver
 
         private void UpdateCell(int row, int column, int value)
         {
-            var puzzle = _puzzle.Span;
+            var puzzle = _board.Span;
             var index = row * 9 + column;
             if (puzzle[index] != 0)
             {
@@ -240,6 +255,19 @@ namespace sudoku_solver
         public static int GetOffsetForBox(int index)
         {
             return (index / 3) * 27 + (index % 3) * 3;
+        }
+
+        public override string ToString()
+        {
+            var buffer = new StringBuilder();
+            var board = _board.Span;
+            for (int i = 0; i < board.Length; i++)
+            {
+                var num = board[i];
+                char cell = num == 0 ? '.' : (char)('0' + num);
+                buffer.Append(cell);
+            }
+            return buffer.ToString();
         }
 
         public static (int row, int column) GetLocationForBoxCell(int box, int index)
@@ -266,6 +294,85 @@ namespace sudoku_solver
         private static int GetOffsetForRow(int index)
         {
             return index * 9;
+        }
+
+        private static int[] ReadPuzzleAsString(string board)
+        {
+            int[] puzzle = new int[81];
+            int index = 0;
+            foreach (var cell in board)
+            {
+                var value = 0;
+                if (cell != '.')
+                {
+                    value = (int)cell - (int)'0';
+                }
+                puzzle[index] = value;
+                index++;
+            }
+            if (index != 81)
+            {
+                throw new Exception();
+            }
+            return puzzle;
+        }
+
+        public static void DrawPuzzle(Puzzle puzzle, Solution solution)
+        {
+            PrintColumnSolution(solution);
+
+            for (int i = 0; i < 9; i++)
+            {
+                var row = puzzle.GetRow(i);
+
+                if (i == 3 || i == 6)
+                {
+                    WriteLine("------+-------+------");
+                }
+                
+                for (int j = 0; j < 9; j++)
+                {
+                    if (j == 3 || j == 6)
+                    {
+                        Write($"| {row.Segment[j]} ");
+                    }
+                    else if (j == 8)
+                    {
+                        Write($"{row.Segment[j]}");
+                    }
+                    else
+                    {
+                        Write($"{row.Segment[j]} ");
+                    }
+                }
+
+                if (solution.Solved && i == solution.Row)
+                {
+                    Write("*");
+                }
+                WriteLine();
+            }
+            WriteLine(puzzle);
+
+
+            void PrintColumnSolution(Solution solution)
+            {
+                if (!solution.Solved)
+                {
+                    return;
+                }
+
+                for(int i = 0; i < solution.Column; i++)
+                {
+                    Write("  ");
+                    if (i == 2 || i == 5)
+                    {
+                        Write("  ");
+                    }
+                }
+                Write("*");
+                WriteLine();
+            }
         }
     }
 }

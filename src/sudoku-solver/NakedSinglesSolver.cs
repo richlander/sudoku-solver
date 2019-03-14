@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 namespace sudoku_solver
 {
-    public class SingleEntrySolver : ISolver
+    public class NakedSinglesSolver : ISolver
     {
         private Puzzle _puzzle;
         private readonly int _effectiveCount = 8;
-        public SingleEntrySolver(Puzzle puzzle)
+        public NakedSinglesSolver(Puzzle puzzle)
         {
             _puzzle = puzzle;
         }
@@ -20,6 +20,17 @@ namespace sudoku_solver
                 if (IsColumnEffective(i)) yield return SolveColumn(i);
                 if (IsRowEffective(i)) yield return SolveRow(i);
             }
+        }
+
+        public Solution Solve(int index)
+        {
+            if (IsBoxEffective(index)) return SolveBox(index);
+            if (IsColumnEffective(index)) return SolveColumn(index);
+            if (IsRowEffective(index)) return SolveRow(index);
+            return new Solution 
+            {
+                Solved = false
+            };
         }
 
         public bool IsEffective()
@@ -36,11 +47,11 @@ namespace sudoku_solver
             return false;
         }
 
-        private bool IsBoxEffective(int box) => _puzzle.SolvedForBox[box] == _effectiveCount;
-        private bool IsRowEffective(int row) => _puzzle.SolvedForRow[row] == _effectiveCount;
-        private bool IsColumnEffective(int column) => _puzzle.SolvedForColumn[column] == _effectiveCount;
+        public bool IsBoxEffective(int box) => _puzzle.SolvedForBox[box] == _effectiveCount;
+        public bool IsRowEffective(int row) => _puzzle.SolvedForRow[row] == _effectiveCount;
+        public bool IsColumnEffective(int column) => _puzzle.SolvedForColumn[column] == _effectiveCount;
         
-        private Solution SolveColumn(int index)
+        public Solution SolveColumn(int index)
         {
             var line = _puzzle.GetColumn(index);
             (bool solved, int cell, int value) = SolveLine(line);
@@ -55,13 +66,14 @@ namespace sudoku_solver
                 solution.Column = index;
                 solution.Row = cell;
                 solution.Value = value;
+                solution.Solver = this;
                 return solution;
             }
 
             return solution;
         }
 
-        private Solution SolveRow(int index)
+        public Solution SolveRow(int index)
         {
             var line = _puzzle.GetRow(index);
             (bool solved, int cell, int value) = SolveLine(line);
@@ -76,6 +88,7 @@ namespace sudoku_solver
                 solution.Column = cell;
                 solution.Row = index;
                 solution.Value = value;
+                solution.Solver = this;
                 return solution;
             }
 
@@ -123,7 +136,7 @@ namespace sudoku_solver
             return unknownValue;
         }
 
-        private Solution SolveBox(int index)
+        public Solution SolveBox(int index)
         {
             var box = _puzzle.GetBox(index);
 
@@ -184,6 +197,7 @@ namespace sudoku_solver
             solution.Solved = true;
             solution.Row = row;
             solution.Column = column;
+            solution.Solver = this;
             return solution;
         }
     }
