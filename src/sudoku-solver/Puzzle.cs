@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace sudoku_solver
 {
-    public class Puzzle
+    public ref struct Puzzle
     {
-        private Memory<int> _puzzle;
+        public Span<int> Segment;
         public static readonly int UnsolvedMarker = 0;
         public int TotalsCells = 81;
-        private Puzzle(Memory<int> puzzle)
+        private Puzzle(Span<int> puzzle)
         {
             _puzzle = puzzle;
         }

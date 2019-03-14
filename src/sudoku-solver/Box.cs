@@ -4,13 +4,25 @@ namespace sudoku_solver
 {
     public ref struct Box
     {
+        private Puzzle _puzzle;
+        private Span<int> _segment;
+        private int _offset;
+        private int _index;
 
-        public Line FirstRow;
-        public Line InsideRow;
-        public Line LastRow;
-        public Line FirstColumn;
-        public Line InsideColumn;
-        public Line LastColumn;
+        public Box(Puzzle puzzle, int index)
+        {
+            _puzzle = puzzle;
+            _segment = puzzle.s;
+            _offset = GetOffset(index);
+            _index = index;
+        }
+
+        public Line FirstRow => new Line(_segment.Slice(_offset, 3));
+        public Line InsideRow => new Line(_segment.Slice(_offset + 9, 3));
+        public Line LastRow => new Line(_segment.Slice(_offset + 18, 3));
+        public Line FirstColumn => GetColumnSegment(0);
+        public Line InsideColumn => GetColumnSegment(1);
+        public Line LastColumn => GetColumnSegment(2);
 
         public int GetUnsolvedCount()
         {
@@ -81,6 +93,26 @@ namespace sudoku_solver
                 LastRow[2]
             };
             return new Line(boxSequence);
+        }
+
+        private static int GetOffset(int index)
+        {
+            return (index / 3) * 27 + (index % 3) * 3;
+        }
+
+        private Line GetColumnSegment(int index)
+        {
+            var offset = GetOffset(_index) + index;
+
+            return new Line
+            {
+                Segment = new int[] 
+                {
+                    _segment[offset],
+                    _segment[offset + 9],
+                    _segment[offset + 18]
+                }
+            };
         }
     }
 }
