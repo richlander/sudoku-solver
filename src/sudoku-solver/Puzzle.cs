@@ -3,14 +3,14 @@ using System.Collections.Generic;
 
 namespace sudoku_solver
 {
-    public ref struct Puzzle
+    public class Puzzle
     {
-        public Span<int> Segment;
+        private Memory<int> _board;
         public static readonly int UnsolvedMarker = 0;
         public int TotalsCells = 81;
-        private Puzzle(Span<int> puzzle)
+        private Puzzle(Memory<int> board)
         {
-            _puzzle = puzzle;
+            _board = board;
         }
 
         private int Solved {get; set;}
@@ -18,6 +18,8 @@ namespace sudoku_solver
         public int[] SolvedForBox {get; private set;}
         public int[] SolvedForRow { get; private set; }
         public int[] SolvedForColumn { get; private set; }
+
+        public ReadOnlyMemory<int> Board => _board;
 
         public static Puzzle ReadPuzzle(Memory<int> puzzle)
         {
