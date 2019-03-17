@@ -83,7 +83,7 @@ namespace sudoku_solver
         }
         private PuzzleState Validate()
         {
-            if (_puzzle.Length != TotalsCells)
+            if (_board.Length != TotalsCells)
             {
                 throw new Exception("Puzzle incorrect length");
             }
@@ -124,7 +124,7 @@ namespace sudoku_solver
                 Valid = true
             };
 
-            (int solvedCount, PuzzleState puzzleState) ProcessSequence(Span<int> sequence)
+            (int solvedCount, PuzzleState puzzleState) ProcessSequence(ReadOnlySpan<int> sequence)
             {
                 int count = 0;
                 var values = new bool[10];
@@ -160,7 +160,7 @@ namespace sudoku_solver
         {
             var start = GetOffsetForRow(row);
 
-            return new Line(_puzzle.Slice(start, 9).Span);
+            return new Line(_board.Slice(start, 9).Span);
         }
 
         public Line GetColumn(int column)
@@ -169,7 +169,7 @@ namespace sudoku_solver
             for (int i = 0;  i < 9; i++)
             {
                 var cell = column + (i * 9);
-                col[i] = _puzzle.Span[cell];
+                col[i] = _board.Span[cell];
             }
             
             return new Line(col);
@@ -177,16 +177,7 @@ namespace sudoku_solver
 
         public Box GetBox(int index)
         {
-            int start = GetOffsetForBox(index);
-
-            var box = new Box
-            {
-                FirstRow = new Line(_puzzle.Slice(start, 3).Span),
-                InsideRow = new Line(_puzzle.Slice(start + 9, 3).Span),
-                LastRow = new Line(_puzzle.Slice(start + 18, 3).Span)
-            };
-
-            return box;
+            return new Box(this, index);
         }
 
         public Line GetBoxAsLine(int index)
@@ -224,7 +215,7 @@ namespace sudoku_solver
 
         private void UpdateCell(int row, int column, int value)
         {
-            var puzzle = _puzzle.Span;
+            var puzzle = _board.Span;
             var index = row * 9 + column;
             if (puzzle[index] != 0)
             {

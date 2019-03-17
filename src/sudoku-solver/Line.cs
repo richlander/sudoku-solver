@@ -4,9 +4,9 @@ namespace sudoku_solver
 {
     public ref struct Line
     {
-        public Span<int> Segment;
+        public ReadOnlySpan<int> Segment;
 
-        public Line(Span<int> segment)
+        public Line(ReadOnlySpan<int> segment)
         {
             Segment = segment;
         }
@@ -20,7 +20,7 @@ namespace sudoku_solver
             count += Count(Segment);
             return count;
 
-            int Count(Span<int> row)
+            int Count(ReadOnlySpan<int> row)
             {
                 var sum = 0;
                 for (int i = 0; i < row.Length; i++)
@@ -34,24 +34,26 @@ namespace sudoku_solver
             }
         }
 
-        public bool IsJustOneElementUnsolved()
+        public (bool justOne, int index) IsJustOneElementUnsolved()
         {
             bool justOne = false;
+            int index = 0;
             for (int i = 0; i < Segment.Length; i++)
             {
                 if (Segment[i] == Puzzle.UnsolvedMarker)
                 {
                     if (justOne)
                     {
-                        return false;
+                        return (false, 0);
                     }
                     else
                     {
+                        index = i;
                         justOne = true;
                     }
                 }
             }
-            return justOne;
+            return (justOne, index);
         }
 
         public bool ContainsValue(int value)

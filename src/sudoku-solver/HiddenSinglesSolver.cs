@@ -39,9 +39,9 @@ namespace sudoku_solver
             var box = _puzzle.GetBox(index);
             var effective = new bool[]
             {
-                box.FirstRow.IsJustOneElementUnsolved(),
-                box.InsideRow.IsJustOneElementUnsolved(),
-                box.LastRow.IsJustOneElementUnsolved()
+                box.FirstRow.IsJustOneElementUnsolved().justOne,
+                box.InsideRow.IsJustOneElementUnsolved().justOne,
+                box.LastRow.IsJustOneElementUnsolved().justOne
             };
 
             return ((effective[0] || effective[1] || effective[2]), effective);

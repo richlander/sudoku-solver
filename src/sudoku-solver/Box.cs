@@ -1,50 +1,36 @@
 using System;
+using System.Diagnostics;
 
 namespace sudoku_solver
 {
     public ref struct Box
     {
         private Puzzle _puzzle;
-        private Span<int> _segment;
+        private ReadOnlySpan<int> _segment;
         private int _offset;
         private int _index;
 
         public Box(Puzzle puzzle, int index)
         {
             _puzzle = puzzle;
-            _segment = puzzle.s;
+            _segment = puzzle.Board.Span;
             _offset = GetOffset(index);
             _index = index;
         }
 
-        public Line FirstRow => new Line(_segment.Slice(_offset, 3));
-        public Line InsideRow => new Line(_segment.Slice(_offset + 9, 3));
-        public Line LastRow => new Line(_segment.Slice(_offset + 18, 3));
-        public Line FirstColumn => GetColumnSegment(0);
-        public Line InsideColumn => GetColumnSegment(1);
-        public Line LastColumn => GetColumnSegment(2);
+        public Line FirstRow => GetRow(0);
+        public Line InsideRow => GetRow(1);
+        public Line LastRow => GetRow(2);
+        public Line FirstColumn => GetColumn(0);
+        public Line InsideColumn => GetColumn(1);
+        public Line LastColumn => GetColumn(2);
 
         public int GetUnsolvedCount()
         {
-            int count = 0;
-
-            count += Count(FirstRow);
-            count += Count(InsideRow);
-            count += Count(LastRow);
-            return count;
-
-            int Count(Line line)
-            {
-                var sum = 0;
-                for (int i = 0;i <line.Segment.Length; i++)
-                {
-                    if (line[i] != 0)
-                    {
-                        sum++;
-                    }
-                }
-                return sum;
-            }
+            return 
+                FirstRow.GetUnsolvedCount() +
+                InsideRow.GetUnsolvedCount() +
+                LastRow.GetUnsolvedCount();
         }
 
         public bool[] GetValues()
@@ -97,12 +83,22 @@ namespace sudoku_solver
 
         private static int GetOffset(int index)
         {
-            return (index / 3) * 27 + (index % 3) * 3;
+            var offset = (index / 3) * 27 + (index % 3) * 3;
+            if (offset > 80)
+            {
+                Debugger.Break();
+            }
+            return offset;
         }
 
-        private Line GetColumnSegment(int index)
+        public Line GetRow(int index)
         {
-            var offset = GetOffset(_index) + index;
+            return new Line(_segment.Slice(_offset + (9 * index), 3));
+        }
+        
+        public Line GetColumn(int index)
+        {
+            var offset = _offset + index;
 
             return new Line
             {
