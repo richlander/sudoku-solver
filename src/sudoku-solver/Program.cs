@@ -19,8 +19,8 @@ namespace sudoku_solver
             var solvers = new List<ISolver>
             {
                 new SingleEntrySolver(puzzle),
+                new NakedSinglesSolver(puzzle),
                 new HiddenSinglesSolver(puzzle)
-                //new HighestOccuringSolver(puzzle)
             };
          
             var iterations = 0;
