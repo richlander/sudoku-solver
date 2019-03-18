@@ -1,16 +1,20 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace sudoku_solver
 {
-    public class HiddenSinglesSolver : ISolver
+    public class HighestOccuringAdjacentSolver : ISolver
     {
         private Puzzle _puzzle;
 
-        public HiddenSinglesSolver(Puzzle puzzle)
+        public HighestOccuringAdjacentSolver(Puzzle puzzle)
         {
             _puzzle = puzzle;
+        }
+
+        public bool IsEffective()
+        {
+            return true;
         }
 
         public IEnumerable<Solution> FindSolution()
@@ -23,31 +27,8 @@ namespace sudoku_solver
                     yield return solution;
                 }
             }
-            yield return new Solution
-            {
-                Solved = false
-            };
         }
 
-        public bool IsEffective()
-        {
-            for (int i = 0; i < 9; i++)
-            {
-                var box = _puzzle.GetBox(i);
-                (var rowJustOne, var rowCandidateIndex) = box.GetRow(i).IsJustOneElementUnsolved();
-                (var colJustOne, var candidateIndex) = box.GetColumn(i).IsJustOneElementUnsolved();
-
-                if (rowJustOne || colJustOne)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        // find a box row/column with just one missing value
-        // find a value that is present in the other two rows/columns but not this box
-        // the value can be placed in the open spot if everything lines up
         public Solution Solve(int index)
         {
             var box = _puzzle.GetBox(index);
@@ -70,6 +51,8 @@ namespace sudoku_solver
             var avnb1 = _puzzle.GetBox(avn[2]);
             var avnb2 = _puzzle.GetBox(avn[3]);
 
+            
+
             // find intersection of values for adjacent rows
             for (int i = 0; i < 3; i++)
             {
@@ -78,7 +61,7 @@ namespace sudoku_solver
                 {
                     continue;
                 }
-                
+
                 // calculate indexes of adjacent rows
                 var row1 = (i + 1) % 3;
                 var row2 = (i + 2) % 3;
@@ -137,6 +120,35 @@ namespace sudoku_solver
             {
                 Solved = false
             };
+        }
+
+        private int GetHighestOccuringValueNotInBox(Box box, int[] avn)
+        {
+            var line = box.AsLine();
+            var avnb1 = _puzzle.GetBox(avn[0]).AsLine();
+            var avnb2 = _puzzle.GetBox(avn[1]).AsLine();
+            var ahnb1 = _puzzle.GetBox(avn[2]).AsLine();
+            var ahnb2 = _puzzle.GetBox(avn[3]).AsLine();
+            var values = new int[10];
+
+            for (int i = 1; i < 10; i++)
+            {
+                values[avnb1[i]]++;
+                values[avnb2[i]]++;
+                values[ahnb1[i]]++;
+                values[ahnb2[i]]++;
+            }
+
+            var highestValue = 0;
+            for (int i = 1; i < 10; i++)
+            {
+                if (values[i] > values[highestValue] && !line.ContainsValue(values[i]))
+                {
+                    highestValue = i;
+                }
+            }
+
+            return highestValue;
         }
     }
 }

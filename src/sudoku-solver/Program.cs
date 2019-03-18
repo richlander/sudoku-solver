@@ -14,12 +14,11 @@ namespace sudoku_solver
             //var puzzle = PuzzleReader.ReadPuzzle(file);
 
             var tests = PuzzleTest.Get().ToArray();
-            var puzzle = tests[2];
+            var puzzle = tests[3];
 
             var solvers = new List<ISolver>
             {
                 new SingleEntrySolver(puzzle),
-                new NakedSinglesSolver(puzzle),
                 new HiddenSinglesSolver(puzzle)
             };
          
