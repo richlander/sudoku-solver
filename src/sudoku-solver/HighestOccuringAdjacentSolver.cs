@@ -51,6 +51,11 @@ namespace sudoku_solver
             var avnb1 = _puzzle.GetBox(avn[2]);
             var avnb2 = _puzzle.GetBox(avn[3]);
 
+            for (int i = 0; i < 9; i++)
+            {
+                var 
+                if (box)
+            }
             
 
             // find intersection of values for adjacent rows
