@@ -67,5 +67,15 @@ namespace sudoku_solver
             }
             return false;
         }
+
+        public bool[] GetValues()
+        {
+            var values = new bool[9];
+            for (int i = 0; i < Segment.Length; i++)
+            {
+                values[Segment[i]] = true;
+            }
+            return values;
+        }
     }
 }

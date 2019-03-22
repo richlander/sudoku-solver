@@ -14,6 +14,7 @@ namespace sudoku_solver
 
         public bool IsEffective()
         {
+            // too hard to tell w/o doing all the work of the solution
             return true;
         }
 
@@ -51,10 +52,33 @@ namespace sudoku_solver
             var avnb1 = _puzzle.GetBox(avn[2]);
             var avnb2 = _puzzle.GetBox(avn[3]);
 
-            for (int i = 0; i < 9; i++)
+            for (int i = 0; i < 3; i++)
             {
-                var 
-                if (box)
+                var row2Index = (i + 1) % 3;
+                var row3Index = (i + 2) % 3;
+
+                var row = box.GetRow(i);
+                var b = ahnb1.GetRow(i).GetValues();
+                var valuesH2 = ahnb2.GetRow(i).GetValues();
+                var mergedValues1 = MergedValues(valuesH1,valuesH2);
+
+                for (int y = 0; y < 3; y++)
+                {
+                    var colndex = (index / 3) * 3;
+                    var col2Index = index + (i + 1) % 3;
+                    var col3Index = index + (i + 2) % 3;
+
+                }
+            }
+
+            bool[] MergedValues(bool[] values, bool[] values2)
+            {
+                var mergedValues = new bool[9];
+                for (int i = 0; i < 9; i++)
+                {
+                    mergedValues[i] = values[i] || values2[i];
+                }
+                return mergedValues;
             }
             
 
