@@ -78,6 +78,16 @@ namespace sudoku_solver
             return values;
         }
 
+        public ReadOnlySpan<int> Union(Line line)
+        {
+            return Line.Union(this.Segment,line.Segment);
+        }
+
+        public ReadOnlySpan<int> DisjointSet(Line line)
+        {
+            return Line.DisjointSet(this.Segment, line.Segment);
+        }
+
         public static ReadOnlySpan<int> Union(ReadOnlySpan<int> values1, ReadOnlySpan<int> values2)
         {
             var values = new int[9];
@@ -105,7 +115,7 @@ namespace sudoku_solver
             var count = 0;
             foreach(int value1 in values1)
             {
-                var inSet;
+                bool inSet = false;
                 foreach(int value2 in values2)
                 {
                     if (value1 == value2)
@@ -124,5 +134,13 @@ namespace sudoku_solver
             ReadOnlySpan<int> union = values;
             return union[0..count];
         }
+    }
+}
+
+public static class Extensions
+{
+    public static ReadOnlySpan<int> AsRich(this ReadOnlySpan<int> foo)
+    {
+        return foo;
     }
 }
