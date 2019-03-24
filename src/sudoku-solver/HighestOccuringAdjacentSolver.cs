@@ -52,21 +52,29 @@ namespace sudoku_solver
             var avnb1 = _puzzle.GetBox(avn[2]);
             var avnb2 = _puzzle.GetBox(avn[3]);
 
+            // rows
             for (int i = 0; i < 3; i++)
             {
                 var row2Index = (i + 1) % 3;
                 var row3Index = (i + 2) % 3;
 
                 var row = box.GetRow(i);
-                var b = ahnb1.GetRow(i).GetValues();
-                var valuesH2 = ahnb2.GetRow(i).GetValues();
-                var mergedValues1 = MergedValues(valuesH1,valuesH2);
 
+                v
+                
+
+                //var b = ahnb1.GetRow(i).GetValues();
+                //var valuesH2 = ahnb2.GetRow(i).GetValues();
+                //var mergedValues1 = MergedValues(valuesH1,valuesH2);
+
+                // cells
                 for (int y = 0; y < 3; y++)
                 {
-                    var colndex = (index / 3) * 3;
+                    var colIndex = (index / 3) * 3;
                     var col2Index = index + (i + 1) % 3;
                     var col3Index = index + (i + 2) % 3;
+
+
 
                 }
             }
