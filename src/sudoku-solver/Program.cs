@@ -103,7 +103,7 @@ namespace sudoku_solver
                 for(int i = 0; i < solution.Column; i++)
                 {
                     Write("  ");
-                    if (i ==3 || i == 6)
+                    if (i == 2 || i == 5)
                     {
                         Write("  ");
                     }

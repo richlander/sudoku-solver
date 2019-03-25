@@ -99,7 +99,20 @@ namespace sudoku_solver
                 var row3Candidates = row3Values.DisjointSet(firstRow.Segment);
 
                 // row candidates -- values in both row 2 and 3 but not in row 1 or in the box
-                var rowCandidates = row2Candidates.Intersect(row3Candidates); 
+                ReadOnlySpan<int> rowCandidates;
+
+                if (row2[0] == 0 && row3[0] == 0)
+                {
+                    rowCandidates = row2Candidates.Intersect(row3Candidates);
+                }
+                else if (row2[0] == 0)
+                {
+                    rowCandidates = row2Candidates;
+                }
+                else
+                {
+                    rowCandidates = row3Candidates;
+                }
 
                 if (rowCandidates.Length == 0)
                 {
@@ -150,15 +163,14 @@ namespace sudoku_solver
                     {
                         colCandidates = col2Candidates.Intersect(col3Candidates);
                     }
-                    else if (col2[0] !=0)
-                    {
-                        colCandidates = col3Candidates;
-                    }
-                    else
+                    else if (col2[0] ==0)
                     {
                         colCandidates = col2Candidates;
                     }
-
+                    else
+                    {
+                        colCandidates = col3Candidates;
+                    }
 
                     // col candidates -- values in both col 2 and 3 but not in col 1 or in the box
                     //var colCandidates = col2Candidates.Intersect(col3Candidates);
