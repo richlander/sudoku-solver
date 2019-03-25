@@ -16,7 +16,7 @@ namespace sudoku_solver
             var tests = PuzzleTest.Get().ToArray();
             var puzzle = tests[2];
 
-            var solvers = new List<ISolver>
+            var solvers = new ISolver[]
             {
                 new SingleEntrySolver(puzzle),
                 new HiddenSinglesSolver(puzzle),
@@ -31,6 +31,7 @@ namespace sudoku_solver
                 if (solution.Solved)
                 {
                     WriteLine($"Solved cell: {solution.GetLocation()}; {solution.Value}");
+                    WriteLine($"Solved by: {solution.Solver}");
                 }
                 else if (iterations == 0)
                 {

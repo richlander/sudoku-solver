@@ -110,5 +110,20 @@ namespace sudoku_solver
                 }
             };
         }
+
+        public int GetOffsetForBox()
+        {
+            return (_index / 3) * 27 + (_index % 3) * 3;
+        }
+
+        public int GetRowOffsetForBox()
+        {
+            return (_index / 3) * 3;
+        }
+
+        public int GetColumnOffsetForBox()
+        {
+            return (_index % 3) * 3;
+        }
     }
 }

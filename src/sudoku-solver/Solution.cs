@@ -6,6 +6,7 @@ namespace sudoku_solver
         public int Row;
         public int Value;
         public bool Solved;
+        public ISolver Solver;
 
         public string GetLocation()
         {

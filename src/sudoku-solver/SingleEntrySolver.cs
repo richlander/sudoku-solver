@@ -55,6 +55,7 @@ namespace sudoku_solver
                 solution.Column = index;
                 solution.Row = cell;
                 solution.Value = value;
+                solution.Solver = this;
                 return solution;
             }
 
@@ -76,6 +77,7 @@ namespace sudoku_solver
                 solution.Column = cell;
                 solution.Row = index;
                 solution.Value = value;
+                solution.Solver = this;
                 return solution;
             }
 
@@ -184,6 +186,7 @@ namespace sudoku_solver
             solution.Solved = true;
             solution.Row = row;
             solution.Column = column;
+            solution.Solver = this;
             return solution;
         }
     }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -65,40 +66,42 @@ namespace sudoku_solver
                 // there are nine row to consider (three boxes)
 
                 // baseline box
-                var row1 = box.GetRow(row1Index);
                 var row2 = box.GetRow(row2Index);
                 var row3 = box.GetRow(row3Index);
 
                 // horizontal adjacent box 1 -- rows
-                var ahnb1Row1 = ahnb1.GetRow(row1Index);
                 var ahnb1Row2 = ahnb1.GetRow(row2Index);
                 var ahnb1Row3 = ahnb1.GetRow(row3Index);
 
                 // horizontal adjacent box 2 -- rows
-                var ahnb2Row1 = ahnb2.GetRow(row1Index);
                 var ahnb2Row2 = ahnb2.GetRow(row2Index);
                 var ahnb2Row3 = ahnb2.GetRow(row3Index);
 
+                // get complete row that includes the the first row of box
+                var firstRowIndex = box.GetRowOffsetForBox() + i;
+                var firstRow = _puzzle.GetRow(firstRowIndex);
+
                 // determine union of values of rows
-                var row1Union = ahnb1Row1.Union(ahnb2Row1);
                 var row2Union = ahnb1Row2.Union(ahnb2Row2);
                 var row3Union = ahnb1Row3.Union(ahnb2Row3);
 
-                // determine intersection of values of row 1
-                var row1Values = row1Union.Intersect(row1.Segment);
+                // the boundaries of the adjacent boxes don't matter
+                // the appropriate rows have been merged (Union) at this point
 
-                // determine disjoint set with baseline rows
+                // determine union of values of row 1 -- these values are all off-limits
+
+                // determine disjoint set with baseline rows -- box row values are off-limits
                 var row2Values = row2Union.DisjointSet(row2.Segment);
                 var row3Values = row3Union.DisjointSet(row3.Segment);
 
-                // determine disjoint set with baseline row
-                var row2Candidates = row2Values.DisjointSet(row1Values);
-                var row3Candidates = row3Values.DisjointSet(row1Values);
+                // determine disjoint set with baseline row -- looking for values now in that row
+                var row2Candidates = row2Values.DisjointSet(firstRow.Segment);
+                var row3Candidates = row3Values.DisjointSet(firstRow.Segment);
 
-                // row candidates
+                // row candidates -- values in both row 2 and 3 but not in row 1 or in the box
                 var rowCandidates = row2Candidates.Intersect(row3Candidates); 
 
-                if (rowCandidates.Length != 1)
+                if (rowCandidates.Length == 0)
                 {
                     continue;
                 }
@@ -106,14 +109,14 @@ namespace sudoku_solver
                 // cells
                 for (int y = 0; y < 3; y++)
                 {
-                    var col1Index = (index / 3) * 3;
-                    var col2Index = index + (i + 1) % 3;
-                    var col3Index = index + (i + 2) % 3;
+                    var col1Index = y;
+                    var col2Index = (y + 1) % 3;
+                    var col3Index = (y + 2) % 3;
 
                     // baseline box
-                    var col1 = box.GetRow(col1Index);
-                    var col2 = box.GetRow(col2Index);
-                    var col3 = box.GetRow(col3Index);
+                    var col1 = box.GetColumn(col1Index);
+                    var col2 = box.GetColumn(col2Index);
+                    var col3 = box.GetColumn(col3Index);
 
                     // vertical adjacent box 1 -- cols
                     var avnb1Col1 = avnb1.GetColumn(col1Index);
@@ -125,30 +128,59 @@ namespace sudoku_solver
                     var avnb2Col2 = avnb2.GetColumn(col2Index);
                     var avnb2Col3 = avnb2.GetColumn(col3Index);
 
-                    // determine intersection of values of cols
-                    var col1Intersection = avnb1Col1.Intersect(avnb2Col1);
-                    var col2Intersection = avnb1Col2.Intersect(avnb2Col2);
-                    var col3Intersection = avnb1Col3.Intersect(avnb2Col3);
+                    // get complete column that includes the the first column of box
+                    var firstColIndex = box.GetColumnOffsetForBox() + y;
+                    var firstCol = _puzzle.GetColumn(firstColIndex);
 
-                    // determine intersection of values of col 1
-                    var col1Values = col1Intersection.Intersect(col1.Segment);
+                    // determine union of values of cols
+                    var col2Union = avnb1Col2.Union(avnb2Col2);
+                    var col3Union = avnb1Col3.Union(avnb2Col3);
 
-                    // determine disjoint set with baseline cols
-                    var col2Values = col2Intersection.DisjointSet(col2.Segment);
-                    var col3Values = col3Intersection.DisjointSet(col3.Segment);
+                    // determine disjoint set with baseline cols -- box col values are off-limits
+                    var col2Values = col2Union.DisjointSet(col2.Segment);
+                    var col3Values = col3Union.DisjointSet(col3.Segment);
 
-                    // determine disjoint set with baseline col
-                    var col2Candidates = col2Values.DisjointSet(col1Values);
-                    var col3Candidates = col3Values.DisjointSet(col1Values);
+                    // determine disjoint set with baseline col -- looking for values now in that col
+                    var col2Candidates = col2Values.DisjointSet(firstCol.Segment);
+                    var col3Candidates = col3Values.DisjointSet(firstCol.Segment);
 
-                    // col candidates
-                    var colCandidates = col2Candidates.Intersect(col3Candidates);
+                    ReadOnlySpan<int> colCandidates;
 
-                    if (colCandidates.Length == 1 && colCandidates[0] == row2Candidates[0])
+                    if (col2[0] == 0 && col3[0] == 0)
                     {
+                        colCandidates = col2Candidates.Intersect(col3Candidates);
+                    }
+                    else if (col2[0] !=0)
+                    {
+                        colCandidates = col3Candidates;
+                    }
+                    else
+                    {
+                        colCandidates = col2Candidates;
+                    }
+
+
+                    // col candidates -- values in both col 2 and 3 but not in col 1 or in the box
+                    //var colCandidates = col2Candidates.Intersect(col3Candidates);
+
+                    if (colCandidates.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    var candidates = colCandidates.Intersect(rowCandidates);
+
+                    if (candidates.Length == 1)
+                    {
+                        (var row, var column) = Puzzle.GetLocationForBoxCell(index, (i*3) + y);
+
                         return new Solution
                         {
-                            Solved = true
+                            Solved = true,
+                            Value = candidates[0],
+                            Row = row,
+                            Column = column,
+                            Solver = this
                         };
                     }
                 }
