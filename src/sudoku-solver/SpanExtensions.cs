@@ -39,7 +39,7 @@ public static class ReadOnlySpanExtensions
         {
             foreach(int value in values0)
             {
-                if (value == 0 || count > 0 && values.AsSpan(0..count).Contains(value))
+                if (value == 0 || values.AsSpan(0..count).Contains(value))
                 {
                     continue;
                 }

@@ -77,29 +77,33 @@ namespace sudoku_solver
                 var ahnb2Row2 = ahnb2.GetRow(row2Index);
                 var ahnb2Row3 = ahnb2.GetRow(row3Index);
 
-                // get complete row that includes the the first row of box
-                var firstRowIndex = box.GetRowOffsetForBox() + i;
-                var firstRow = _puzzle.GetRow(firstRowIndex);
-
                 // determine union of values of rows
                 var row2Union = ahnb1Row2.Union(ahnb2Row2);
                 var row3Union = ahnb1Row3.Union(ahnb2Row3);
+
+                // get complete row that includes the the first row of box
+                var firstRowIndex = box.GetRowOffsetForBox() + i;
+                var firstRow = _puzzle.GetRow(firstRowIndex);
 
                 // the boundaries of the adjacent boxes don't matter
                 // the appropriate rows have been merged (Union) at this point
 
                 // determine union of values of row 1 -- these values are all off-limits
+                // get complete row that includes the the first row of box
+                var boxValues = box.AsValues();
 
                 // determine disjoint set with baseline rows -- box row values are off-limits
-                var row2Values = row2Union.DisjointSet(row2.Segment);
-                var row3Values = row3Union.DisjointSet(row3.Segment);
+
+                // determine disjoint set with baseline rows -- box row values are off-limits
+                var row2Values = row2Union.DisjointSet(boxValues);
+                var row3Values = row3Union.DisjointSet(boxValues);
 
                 // determine disjoint set with baseline row -- looking for values now in that row
                 var row2Candidates = row2Values.DisjointSet(firstRow.Segment);
                 var row3Candidates = row3Values.DisjointSet(firstRow.Segment);
 
                 // row candidates -- values in both row 2 and 3 but not in row 1 or in the box
-                ReadOnlySpan<int> rowCandidates;
+                ReadOnlySpan<int> rowCandidates = new int[]{};
 
                 if (row2[0] == 0 && row3[0] == 0)
                 {
@@ -109,7 +113,7 @@ namespace sudoku_solver
                 {
                     rowCandidates = row2Candidates;
                 }
-                else
+                else if (row3[0] == 0)
                 {
                     rowCandidates = row3Candidates;
                 }
@@ -150,14 +154,14 @@ namespace sudoku_solver
                     var col3Union = avnb1Col3.Union(avnb2Col3);
 
                     // determine disjoint set with baseline cols -- box col values are off-limits
-                    var col2Values = col2Union.DisjointSet(col2.Segment);
-                    var col3Values = col3Union.DisjointSet(col3.Segment);
+                    var col2Values = col2Union.DisjointSet(boxValues);
+                    var col3Values = col3Union.DisjointSet(boxValues);
 
                     // determine disjoint set with baseline col -- looking for values now in that col
                     var col2Candidates = col2Values.DisjointSet(firstCol.Segment);
                     var col3Candidates = col3Values.DisjointSet(firstCol.Segment);
 
-                    ReadOnlySpan<int> colCandidates;
+                    ReadOnlySpan<int> colCandidates = new int[] { };
 
                     if (col2[0] == 0 && col3[0] == 0)
                     {
@@ -167,7 +171,7 @@ namespace sudoku_solver
                     {
                         colCandidates = col2Candidates;
                     }
-                    else
+                    else if (col3[0] == 0)
                     {
                         colCandidates = col3Candidates;
                     }
@@ -185,7 +189,6 @@ namespace sudoku_solver
                     if (candidates.Length == 1)
                     {
                         (var row, var column) = Puzzle.GetLocationForBoxCell(index, (i*3) + y);
-
                         return new Solution
                         {
                             Solved = true,

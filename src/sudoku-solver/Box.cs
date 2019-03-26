@@ -6,14 +6,14 @@ namespace sudoku_solver
     public ref struct Box
     {
         private Puzzle _puzzle;
-        private ReadOnlySpan<int> _segment;
+        private ReadOnlySpan<int> _board;
         private int _offset;
         private int _index;
 
         public Box(Puzzle puzzle, int index)
         {
             _puzzle = puzzle;
-            _segment = puzzle.Board.Span;
+            _board = puzzle.Board.Span;
             _offset = GetOffset(index);
             _index = index;
         }
@@ -81,6 +81,31 @@ namespace sudoku_solver
             return new Line(boxSequence);
         }
 
+        public ReadOnlySpan<int> AsValues()
+        {
+            var values = new int[9];
+            int count = 0;
+            count = ProcessValues(FirstRow.Segment, count);
+            count = ProcessValues(InsideRow.Segment, count);
+            count = ProcessValues(LastRow.Segment, count);
+
+            return values[0..count];
+
+            int ProcessValues(ReadOnlySpan<int> values0, int count)
+            {
+                foreach (int value in values0)
+                {
+                    if (value == 0 || values.AsSpan(0..count).Contains(value))
+                    {
+                        continue;
+                    }
+                    values[count] = value;
+                    count++;
+                }
+                return count;
+            }
+        }
+
         private static int GetOffset(int index)
         {
             var offset = (index / 3) * 27 + (index % 3) * 3;
@@ -93,7 +118,7 @@ namespace sudoku_solver
 
         public Line GetRow(int index)
         {
-            return new Line(_segment.Slice(_offset + (9 * index), 3));
+            return new Line(_board.Slice(_offset + (9 * index), 3));
         }
         
         public Line GetColumn(int index)
@@ -104,9 +129,9 @@ namespace sudoku_solver
             {
                 Segment = new int[] 
                 {
-                    _segment[offset],
-                    _segment[offset + 9],
-                    _segment[offset + 18]
+                    _board[offset],
+                    _board[offset + 9],
+                    _board[offset + 18]
                 }
             };
         }
