@@ -200,11 +200,21 @@ namespace sudoku_solver
                         return GetSolution(index, i, y, row2AndColumnCandidatesNarrowed[0]);
                     }
 
+                    if (row2AndColumnCandidatesNarrowed.Length == 1 && row2[0] != 0 && row3[0] == 0)
+                    {
+                        return GetSolution(index, i, y, row2AndColumnCandidatesNarrowed[0]);
+                    }
+
                     // row 2 != 0; row 3 == 0
                     // row 3 needs to match columns; row 2 values need to be considered
                     var row3AndColumnCandidates = row3Candidates.Intersect(colCandidates);
                     var row3AndColumnCandidatesNarrowed = row3AndColumnCandidates.DisjointSet(row2Candidates);
                     if (row3AndColumnCandidatesNarrowed.Length == 1 && row2[0] != 0 && row3[0] == 0)
+                    {
+                        return GetSolution(index, i, y, row3AndColumnCandidatesNarrowed[0]);
+                    }
+
+                    if (row3AndColumnCandidatesNarrowed.Length == 1 && row2[0] == 0 && row3[0] != 0)
                     {
                         return GetSolution(index, i, y, row3AndColumnCandidatesNarrowed[0]);
                     }
@@ -228,8 +238,19 @@ namespace sudoku_solver
                     }
 
                     // following set of cases are more complicated
+                    // they enable more incomplete rows or columns
 
+                    // column 2 and 3 and row2 project value
+                    // row 3, column 3 has a value
+                    // As a result, row 2, column 3 should be projected value
 
+                    if (row2AndColumnCandidates.Length == 1 && row3[y] != 0)
+                    {
+                        return GetSolution(index, i, y, row2AndColumnCandidates[0]);
+                    }
+
+                    // Full column forces projection of value into another column
+     
                 }
 
                 Solution GetSolution(int box, int row, int column, int value)
