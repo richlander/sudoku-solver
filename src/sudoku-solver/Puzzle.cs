@@ -40,6 +40,18 @@ namespace sudoku_solver
             return false;
         }
 
+        public bool Solve(IReadOnlyCollection<ISolver> solvers)
+        {
+            foreach((Solution solution, int attempts) in TrySolvers(solvers))
+            {
+                if (!solution.Solved)
+                {
+                    break;
+                }
+            }
+            return IsSolved();
+        }
+
         public IEnumerable<(Solution Solution, int attempts)> TrySolvers(IReadOnlyCollection<ISolver> solvers)
         {
             var solved = true;
@@ -80,7 +92,7 @@ namespace sudoku_solver
                 return (new Solution{Solved=false}, attempts);
             }
         }
-        private PuzzleState Validate()
+        public PuzzleState Validate()
         {
             if (_board.Length != TotalsCells)
             {

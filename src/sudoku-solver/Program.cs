@@ -18,8 +18,8 @@ namespace sudoku_solver
 
             var solvers = new ISolver[]
             {
-                new SingleEntrySolver(puzzle),
                 new NakedSinglesSolver(puzzle),
+                //new NakedSingles2Solver(puzzle),
                 new HiddenSinglesSolver(puzzle)
             };
          
@@ -57,6 +57,10 @@ namespace sudoku_solver
                     WriteLine("Puzzle is solved!");
                     break;
                 }
+            }
+            if (!puzzle.Validate().Valid)
+            {
+                WriteLine("Something is busted!");
             }
 
             WriteLine($"{iterations} iterations of solutions used.");

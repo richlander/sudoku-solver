@@ -4,11 +4,11 @@ using System.Linq;
 
 namespace sudoku_solver
 {
-    public class HiddenSinglesSolver : ISolver
+    public class HighestOccuringAdjacentSolver : ISolver
     {
         private Puzzle _puzzle;
 
-        public HiddenSinglesSolver(Puzzle puzzle)
+        public HighestOccuringAdjacentSolver(Puzzle puzzle)
         {
             _puzzle = puzzle;
         }
@@ -66,13 +66,6 @@ namespace sudoku_solver
                 // there are nine row to consider (three boxes)
 
                 // baseline box
-                var row1 = box.GetRow(row1Index);
-
-                if (!row1.ContainsValue(0))
-                {
-                    continue;
-                }
-
                 var row2 = box.GetRow(row2Index);
                 var row3 = box.GetRow(row3Index);
 
@@ -108,26 +101,31 @@ namespace sudoku_solver
                 // determine disjoint set with baseline row -- looking for values now in that row
                 var row2Candidates = row2Values.DisjointSet(firstRow.Segment);
                 var row3Candidates = row3Values.DisjointSet(firstRow.Segment);
-                var rowCandidates = row2Candidates.Intersect(row3Candidates);
 
-                // determine if rows on their own present a solution
-                if (rowCandidates.Length == 1)
+                // row candidates -- values in both row 2 and 3 but not in row 1 or in the box
+                ReadOnlySpan<int> rowCandidates = new int[]{};
+
+                if (row2[0] == 0 && row3[0] == 0)
                 {
-                    (var justOne, var column) = row1.IsJustOneElementUnsolved();
-                    if (justOne)
-                    {
-                        return GetSolution(index, i, column, rowCandidates[0]);
-                    }
+                    rowCandidates = row2Candidates.Intersect(row3Candidates);
+                }
+                else if (row2[0] == 0)
+                {
+                    rowCandidates = row2Candidates;
+                }
+                else if (row3[0] == 0)
+                {
+                    rowCandidates = row3Candidates;
                 }
 
-                // interate over columns for row
+                if (rowCandidates.Length == 0)
+                {
+                    continue;
+                }
+
+                // cells
                 for (int y = 0; y < 3; y++)
                 {
-                    if (row1[y] != 0)
-                    {
-                        continue;
-                    }
-
                     var col1Index = y;
                     var col2Index = (y + 1) % 3;
                     var col3Index = (y + 2) % 3;
@@ -162,87 +160,44 @@ namespace sudoku_solver
                     // determine disjoint set with baseline col -- looking for values now in that col
                     var col2Candidates = col2Values.DisjointSet(firstCol.Segment);
                     var col3Candidates = col3Values.DisjointSet(firstCol.Segment);
-                    var colCandidates = col2Candidates.Intersect(col3Candidates);
 
-                    // determine if columns on their own present a solution
-                    if (colCandidates.Length == 1)
+                    ReadOnlySpan<int> colCandidates = new int[] { };
+
+                    if (col2[0] == 0 && col3[0] == 0)
                     {
-                        (var justOne, var row) = col1.IsJustOneElementUnsolved();
-                        if (justOne)
+                        colCandidates = col2Candidates.Intersect(col3Candidates);
+                    }
+                    else if (col2[0] ==0)
+                    {
+                        colCandidates = col2Candidates;
+                    }
+                    else if (col3[0] == 0)
+                    {
+                        colCandidates = col3Candidates;
+                    }
+
+                    // col candidates -- values in both col 2 and 3 but not in col 1 or in the box
+                    //var colCandidates = col2Candidates.Intersect(col3Candidates);
+
+                    if (colCandidates.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    var candidates = colCandidates.Intersect(rowCandidates);
+
+                    if (candidates.Length == 1)
+                    {
+                        (var row, var column) = Puzzle.GetLocationForBoxCell(index, (i*3) + y);
+                        return new Solution
                         {
-                            return GetSolution(index, row, y, colCandidates[0]);
-                        }
+                            Solved = true,
+                            Value = candidates[0],
+                            Row = row,
+                            Column = column,
+                            Solver = this
+                        };
                     }
-
-                    // determine if rows and columns together present a solution
-                    var rowAndColumnCandidates = rowCandidates.Intersect(colCandidates);
-                    if (rowAndColumnCandidates.Length == 1)
-                    {
-                        return GetSolution(index, i, y, rowAndColumnCandidates[0]);
-                    }
-
-                    // determine if various combinations of rows and columns present a solution
-
-                    // row1 is candidate for all following cases
-
-                    // following set of cases involve a row or a column with:
-                    // a candidate, one cell == 0 and the other non zero
-                    // the cases are looking for a set of rows and columns
-                    // that project the same value except for the row or column with 
-                    // the non-zero value (which doesn't require a projected value)
-
-                    // row 2 == 0; row 3 != 0
-                    // row 2 needs to match columns; row 3 values need to be considered
-                    var row2AndColumnCandidates = row2Candidates.Intersect(colCandidates);
-                    var row2AndColumnCandidatesNarrowed = row2AndColumnCandidates.DisjointSet(row3Candidates);
-                    if (row2AndColumnCandidatesNarrowed.Length == 1 && row2[0] == 0 && row3[0] != 0)
-                    {
-                        return GetSolution(index, i, y, row2AndColumnCandidatesNarrowed[0]);
-                    }
-
-                    // row 2 != 0; row 3 == 0
-                    // row 3 needs to match columns; row 2 values need to be considered
-                    var row3AndColumnCandidates = row3Candidates.Intersect(colCandidates);
-                    var row3AndColumnCandidatesNarrowed = row3AndColumnCandidates.DisjointSet(row2Candidates);
-                    if (row3AndColumnCandidatesNarrowed.Length == 1 && row2[0] != 0 && row3[0] == 0)
-                    {
-                        return GetSolution(index, i, y, row3AndColumnCandidatesNarrowed[0]);
-                    }
-
-                    // row 3 == 0; row 2 == 0
-                    // col 2 == 0; col 3 != 0
-                    var col2AndRowCandidates = col2Candidates.Intersect(rowCandidates);
-                    var col2AndRowCandidatesNarrowed = col2AndRowCandidates.DisjointSet(col3Candidates);
-                    if (col2AndRowCandidatesNarrowed.Length == 1 && col2[i] == 0 && col3[i] != 0)
-                    {
-                        return GetSolution(index, i, y, col2AndRowCandidatesNarrowed[0]);
-                    }
-
-                    // row 3 == 0; row 2 == 0
-                    // col 2 != 0; col 3 == 0
-                    var col3AndRowCandidates = col3Candidates.Intersect(rowCandidates);
-                    var col3AndRowCandidatesNarrowed = col3AndRowCandidates.DisjointSet(col2Candidates);
-                    if (col3AndRowCandidatesNarrowed.Length == 1 && col2[i] != 0 && col3[i] == 0)
-                    {
-                        return GetSolution(index, i, y, col3AndRowCandidatesNarrowed[0]);
-                    }
-
-                    // following set of cases are more complicated
-
-
-                }
-
-                Solution GetSolution(int box, int row, int column, int value)
-                {
-                    (var r, var c) = Puzzle.GetLocationForBoxCell(index, (row * 3) + column);
-                    return new Solution
-                    {
-                        Solved = true,
-                        Value = value,
-                        Row = r,
-                        Column = c,
-                        Solver = this
-                    };
                 }
             }
            

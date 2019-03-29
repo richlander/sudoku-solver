@@ -19,5 +19,13 @@ namespace sudoku_solver
                 return string.Empty;
             }
         }
+
+        public static Solution False()
+        {
+            return new Solution
+            {
+                Solved = false
+            };
+        }
     }
 }
