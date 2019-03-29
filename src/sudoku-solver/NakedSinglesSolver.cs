@@ -34,12 +34,15 @@ namespace sudoku_solver
             for (int i = 0; i < 9; i++)
             {
                 var box = _puzzle.GetBox(i);
-                (var rowJustOne, var rowCandidateIndex) = box.GetRow(i).IsJustOneElementUnsolved();
-                (var colJustOne, var candidateIndex) = box.GetColumn(i).IsJustOneElementUnsolved();
-
-                if (rowJustOne || colJustOne)
+                for (int y = 0; y < 3; y++)
                 {
-                    return true;
+                    (var rowJustOne, var rowCandidateIndex) = box.GetRow(y).IsJustOneElementUnsolved();
+                    (var colJustOne, var candidateIndex) = box.GetColumn(y).IsJustOneElementUnsolved();
+
+                    if (rowJustOne || colJustOne)
+                    {
+                        return true;
+                    }
                 }
             }
             return false;

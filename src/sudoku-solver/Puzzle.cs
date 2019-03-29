@@ -8,10 +8,6 @@ namespace sudoku_solver
         private Memory<int> _board;
         public static readonly int UnsolvedMarker = 0;
         public int TotalsCells = 81;
-        private Puzzle(Memory<int> board)
-        {
-            _board = board;
-        }
 
         private int Solved {get; set;}
         private int UnSolvedcells => TotalsCells - Solved;
@@ -19,14 +15,17 @@ namespace sudoku_solver
         public int[] SolvedForRow { get; private set; }
         public int[] SolvedForColumn { get; private set; }
 
-        public ReadOnlyMemory<int> Board => _board;
-
-        public static Puzzle ReadPuzzle(Memory<int> puzzle)
+        public Puzzle(string board) : this(ReadPuzzleAsString(board))
         {
-            var p = new Puzzle(puzzle);
-            p.Validate();
-            return p;
         }
+
+        public Puzzle(Memory<int> board)
+        {
+            _board = board;
+            Validate();
+        }
+
+        public ReadOnlyMemory<int> Board => _board;
 
         public bool IsSolved()
         {
@@ -259,6 +258,27 @@ namespace sudoku_solver
         private static int GetOffsetForRow(int index)
         {
             return index * 9;
+        }
+
+        private static int[] ReadPuzzleAsString(string board)
+        {
+            int[] puzzle = new int[81];
+            int index = 0;
+            foreach (var cell in board)
+            {
+                var value = 0;
+                if (cell != '.')
+                {
+                    value = (int)cell - (int)'0';
+                }
+                puzzle[index] = value;
+                index++;
+            }
+            if (index != 81)
+            {
+                throw new Exception();
+            }
+            return puzzle;
         }
     }
 }

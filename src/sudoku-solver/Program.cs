@@ -14,7 +14,7 @@ namespace sudoku_solver
             //var puzzle = PuzzleReader.ReadPuzzle(file);
 
             var tests = PuzzleTest.Get().ToArray();
-            var puzzle = tests[2];
+            var puzzle = tests[3];
 
             var solvers = new ISolver[]
             {
@@ -25,6 +25,12 @@ namespace sudoku_solver
          
             var iterations = 0;
             var solved = false;
+            if (puzzle.IsSolved())
+            {
+                DrawPuzzle(puzzle, new Solution(){Solved = false});
+                WriteLine("Puzzle is solved!");
+                return;
+            }
             foreach ((var solution, var attempts) in puzzle.TrySolvers(solvers))
             {
                 iterations++;
