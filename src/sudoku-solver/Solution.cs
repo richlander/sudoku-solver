@@ -8,6 +8,10 @@ namespace sudoku_solver
         public bool Solved;
         public ISolver Solver;
 
+        public string SolverKind;
+
+        public static Solution False => new Solution { Solved = false};
+
         public string GetLocation()
         {
             if (Solved)
@@ -18,14 +22,6 @@ namespace sudoku_solver
             {
                 return string.Empty;
             }
-        }
-
-        public static Solution False()
-        {
-            return new Solution
-            {
-                Solved = false
-            };
         }
     }
 }

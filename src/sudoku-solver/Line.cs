@@ -17,21 +17,14 @@ namespace sudoku_solver
         {
             int count = 0;
 
-            count += Count(Segment);
-            return count;
-
-            int Count(ReadOnlySpan<int> row)
+            for (int i = 0; i < Segment.Length; i++)
             {
-                var sum = 0;
-                for (int i = 0; i < row.Length; i++)
+                if (Segment[i] == 0)
                 {
-                    if (row[i] != 0)
-                    {
-                        sum++;
-                    }
+                    count++;
                 }
-                return sum;
             }
+            return count;
         }
 
         public (bool justOne, int index) IsJustOneElementUnsolved()

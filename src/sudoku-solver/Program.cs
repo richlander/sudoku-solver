@@ -24,8 +24,9 @@ namespace sudoku_solver
             };
          
             var iterations = 0;
-            var solved = false;
-            if (puzzle.IsSolved())
+            (var solved, var solvedCells) = puzzle.IsSolved();
+
+            if (solved)
             {
                 DrawPuzzle(puzzle, new Solution(){Solved = false});
                 WriteLine("Puzzle is solved!");
@@ -36,8 +37,9 @@ namespace sudoku_solver
                 iterations++;
                 if (solution.Solved)
                 {
+                    var solverKind = solution.SolverKind is null ? $"{solution.Solver}" : $"{solution.Solver}:{solution.SolverKind}";
                     WriteLine($"Solved cell: {solution.GetLocation()}; {solution.Value}");
-                    WriteLine($"Solved by: {solution.Solver}");
+                    WriteLine($"Solved by: {solverKind}");
                 }
                 else if (iterations == 0)
                 {
@@ -51,18 +53,22 @@ namespace sudoku_solver
                 WriteLine($"{attempts} solutions attempted.");
                 DrawPuzzle(puzzle, solution);
                 WriteLine();
-                solved = puzzle.IsSolved();
+                (solved, solvedCells) = puzzle.IsSolved();
                 if (solution.Solved && solved)
                 {
                     WriteLine("Puzzle is solved!");
                     break;
                 }
-            }
-            if (!puzzle.Validate().Valid)
-            {
-                WriteLine("Something is busted!");
+                if (!puzzle.Validate().Valid)
+                {
+                    WriteLine("Something is busted!");
+                }
             }
 
+            if (!solved)
+            {
+                WriteLine($"Solved cells: {solvedCells}");
+            }
             WriteLine($"{iterations} iterations of solutions used.");
         }
 

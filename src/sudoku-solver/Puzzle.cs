@@ -27,17 +27,18 @@ namespace sudoku_solver
 
         public ReadOnlyMemory<int> Board => _board;
 
-        public bool IsSolved()
+        public (bool solved, int solvedCells) IsSolved()
         {
+            var solved = false;
             if (Solved == TotalsCells && Validate().Solved)
             {
-                return true;
+                solved = true;
             }
             else if (Solved == TotalsCells)
             {
                 throw new Exception("Something went wrong");
             }
-            return false;
+            return (solved, Solved);
         }
 
         public bool Solve(IReadOnlyCollection<ISolver> solvers)
@@ -49,7 +50,7 @@ namespace sudoku_solver
                     break;
                 }
             }
-            return IsSolved();
+            return IsSolved().solved;
         }
 
         public IEnumerable<(Solution Solution, int attempts)> TrySolvers(IReadOnlyCollection<ISolver> solvers)
