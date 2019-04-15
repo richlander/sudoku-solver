@@ -9,7 +9,7 @@ namespace sudoku_solver
         public static readonly int UnsolvedMarker = 0;
         public int TotalsCells = 81;
 
-        private int Solved {get; set;}
+        public int Solved {get; private set;}
         private int UnSolvedcells => TotalsCells - Solved;
         public int[] SolvedForBox {get; private set;}
         public int[] SolvedForRow { get; private set; }
@@ -27,7 +27,7 @@ namespace sudoku_solver
 
         public ReadOnlyMemory<int> Board => _board;
 
-        public (bool solved, int solvedCells) IsSolved()
+        public bool IsSolved()
         {
             var solved = false;
             if (Solved == TotalsCells && Validate().Solved)
@@ -38,7 +38,24 @@ namespace sudoku_solver
             {
                 throw new Exception("Something went wrong");
             }
-            return (solved, Solved);
+            return solved;
+        }
+
+        public bool Solve(ISolver solver)
+        {
+            var solvers = new List<ISolver>()
+            {
+                solver
+            };
+
+            foreach ((Solution solution, int attempts) in TrySolvers(solvers))
+            {
+                if (!solution.Solved)
+                {
+                    break;
+                }
+            }
+            return IsSolved();
         }
 
         public bool Solve(IReadOnlyCollection<ISolver> solvers)
@@ -50,7 +67,7 @@ namespace sudoku_solver
                     break;
                 }
             }
-            return IsSolved().solved;
+            return IsSolved();
         }
 
         public IEnumerable<(Solution Solution, int attempts)> TrySolvers(IReadOnlyCollection<ISolver> solvers)

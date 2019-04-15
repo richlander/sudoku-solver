@@ -24,7 +24,7 @@ namespace sudoku_solver
             };
          
             var iterations = 0;
-            (var solved, var solvedCells) = puzzle.IsSolved();
+            var solved = puzzle.IsSolved();
 
             if (solved)
             {
@@ -53,7 +53,7 @@ namespace sudoku_solver
                 WriteLine($"{attempts} solutions attempted.");
                 DrawPuzzle(puzzle, solution);
                 WriteLine();
-                (solved, solvedCells) = puzzle.IsSolved();
+                solved = puzzle.IsSolved();
                 if (solution.Solved && solved)
                 {
                     WriteLine("Puzzle is solved!");
@@ -67,7 +67,7 @@ namespace sudoku_solver
 
             if (!solved)
             {
-                WriteLine($"Solved cells: {solvedCells}");
+                WriteLine($"Solved cells: {puzzle.Solved}; Remaining: {81 - puzzle.Solved}");
             }
             WriteLine($"{iterations} iterations of solutions used.");
         }
