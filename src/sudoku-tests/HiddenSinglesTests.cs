@@ -18,7 +18,7 @@ namespace sudoku_tests
             var puzzle = new Puzzle(board);
             ISolver solver = new HiddenSinglesSolver(puzzle);
             var solution = solver.FindSolution().First();
-            Assert.True(solution.Solved, "Box should  be solved.");
+            Assert.True(solution.Solved, "Box should be solved.");
         }
 
         [Fact]

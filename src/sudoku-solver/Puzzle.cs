@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace sudoku_solver
 {
@@ -262,6 +263,19 @@ namespace sudoku_solver
         public static int GetOffsetForBox(int index)
         {
             return (index / 3) * 27 + (index % 3) * 3;
+        }
+
+        public override string ToString()
+        {
+            var buffer = new StringBuilder();
+            var board = _board.Span;
+            for (int i = 0; i < board.Length; i++)
+            {
+                var num = board[i];
+                char cell = num == 0 ? '.' : (char)('0' + num);
+                buffer.Append(cell);
+            }
+            return buffer.ToString();
         }
 
         public static (int row, int column) GetLocationForBoxCell(int box, int index)
