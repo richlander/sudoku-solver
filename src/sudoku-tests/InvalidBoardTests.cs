@@ -14,13 +14,14 @@ namespace sudoku_tests
         // The targeted puzzle is invalid and should be detected as such
         // Puzzle: 11...............................................................................
 
+        string _board = "11...............................................................................";
+
         [Fact]
         public void RepeatingValues()
         {
-            var board = "11...............................................................................";
-            var puzzle = new Puzzle(board);
+            var puzzle = new Puzzle(_board);
             var solved = puzzle.IsSolved();
-            Assert.False(solved, "Puzzle should not be solved.");
+            Assert.False(solved, "Puzzle should be rejected.");
         }
     }
 }

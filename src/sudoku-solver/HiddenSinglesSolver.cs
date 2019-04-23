@@ -108,13 +108,14 @@ namespace sudoku_solver
                 var row3Candidates = adjRow3Union.DisjointSet(boxRow1IllegalValues);
                 var boxRow1Candidates = row2Candidates.Intersect(row3Candidates);
 
+                
                 // determine if rows on their own present a solution
                 if (boxRow1Candidates.Length == 1)
                 {
                     (var justOne, var column) = boxRow1.IsJustOneElementUnsolved();
                     if (justOne)
                     {
-                        var solverKind = "RowSolver";
+                        var solverKind = nameof(Strategy.RowSolver);
                         return GetSolution(index, i, column, boxRow1Candidates[0],solverKind);
                     }
                 }
@@ -170,18 +171,19 @@ namespace sudoku_solver
                         (var justOne, var row) = boxCol1.IsJustOneElementUnsolved();
                         if (justOne)
                         {
-                            var solverKind = "ColumnSolver";
+                            var solverKind = nameof(Strategy.ColumnSolver);
                             return GetSolution(index, row, y, boxCol1Candidates[0],solverKind);
                         }
                     }
 
                     // determine if rows and columns together present a solution
+                    // test: SolutionAllSlotsEmpty
                     var rowAndColumnCandidates = boxRow1Candidates.Intersect(boxCol1Candidates);
                     if (rowAndColumnCandidates.Length == 1)
                     {
                         if (boxCol1[i] == 0)
                         {
-                            var solverKind = "RowColumnSolver";
+                            var solverKind = nameof(Strategy.RowColumnSolver);
                             return GetSolution(index, i, y, rowAndColumnCandidates[0],solverKind);
                         }
                     }
@@ -201,19 +203,21 @@ namespace sudoku_solver
                     {
                         bool solved;
                         Solution solution;
+                        var solverKind1 = nameof(Strategy.Column2CandidateColumn3BlockedRowSolver);
 
                         // row1[col3] has a value, so col3 don't need to participate in providing a candidate
                         if (col2Candidates.Length > 0 &&
                             boxRow1[col2Index] == 0 && boxRow1[col3Index] != 0 &&
-                            ((solved, solution) = CheckForBlockedCellCandidates(boxRow1Candidates, col2Candidates, "Column2CandidateBlockedColumn3+RowsSolver")).solved)
+                            ((solved, solution) = CheckForIntersectionCandidates(boxRow1Candidates, col2Candidates, solverKind1)).solved)
                         {
                             return solution;
                         }
 
+                        var solverKind2 = nameof(Strategy.Column2BlockedColumn3CandidateRowSolver);
                         // row1[col2] has a value, so col2 don't need to participate in providing a candidate
                         if (col3Candidates.Length > 0 &&
                             boxRow1[col2Index] != 0 && boxRow1[col3Index] == 0 &&
-                            ((solved, solution) = CheckForBlockedCellCandidates(boxRow1Candidates, col3Candidates, "Column3CandidateBlockedColumn2+RowsSolver")).solved)
+                            ((solved, solution) = CheckForIntersectionCandidates(boxRow1Candidates, col3Candidates, solverKind2)).solved)
                         {
                             return solution;
                         }
@@ -225,74 +229,25 @@ namespace sudoku_solver
                     {
                         bool solved;
                         Solution solution;
-
+                        var solver1 = nameof(Strategy.Row2CandidateRow3BlockedColumnSolver);
                         // col1[row3] has a value, so row3 don't need to participate in providing a candidate
                         if (row2Candidates.Length > 0 &&
                             boxCol1[row2Index] == 0 && boxCol1[row3Index] != 0 &&
-                            ((solved, solution) = CheckForBlockedCellCandidates(boxCol1Candidates, row2Candidates, "Row2CandidateBlockedRow3+RowsSolver")).solved)
+                            ((solved, solution) = CheckForIntersectionCandidates(boxCol1Candidates, row2Candidates, solver1)).solved)
                         {
                             return solution;
                         }
 
+                        var solver2 = nameof(Strategy.Row2BlockedRow3CandidateColumnSolver);
                         // col1[row2] has a value, so row2 don't need to participate in providing a candidate
+                        // test: SolutionTwoSlotsEmptyInColumn
                         if (row3Candidates.Length > 0 &&
                             boxCol1[row2Index] != 0 && boxCol1[row3Index] == 0 &&
-                            ((solved, solution) = CheckForBlockedCellCandidates(boxCol1Candidates, row3Candidates, "Row3CandidateBlockedRow2+RowsSolver")).solved)
+                            ((solved, solution) = CheckForIntersectionCandidates(boxCol1Candidates, row3Candidates, solver2)).solved)
                         {
                             return solution;
                         }
                     }
-                    /* 
-
-                    // row1[col2] has a value, so col2 don't need to participate in providing a candidate
-                    if (boxRow1Candidates.Length > 0 && col3Candidates.Length > 0 &&
-                        boxRow1[col2Index] != 0 && boxRow1[col3Index] == 0)
-                    {
-                        var col2AndRowCandidates = boxRow1Candidates.Intersect(col3Candidates);
-                        if (col2AndRowCandidates.Length == 1)
-                        {
-                            var solverKind = "BlockedColumn2+RowsSolver";
-                            return GetSolution(index, i, y, col2AndRowCandidates[0],solverKind);
-                        }
-                    }
-
-                    // row1[col3] has a value, so col2 don't need to participate in providing a candidate
-                    if (boxRow1Candidates.Length > 0 && col2Candidates.Length > 0 &&
-                        boxRow1[col2Index] == 0 && boxRow1[col3Index] != 0)
-                    {
-                        var col2AndRowCandidates = boxRow1Candidates.Intersect(col2Candidates);
-                        if (col2AndRowCandidates.Length == 1)
-                        {
-                            var solverKind = "BlockedColumn3+RowsSolver";
-                            return GetSolution(index, i, y, col2AndRowCandidates[0],solverKind);
-                        }
-                    }
-                    
-
-                    // col1[row2] has a value, so row2 don't need to participate in providing a candidate
-                    if (boxCol1Candidates.Length > 0 && row3Candidates.Length > 0 &&
-                        boxCol1[row2Index] != 0 && boxCol1[row3Index] == 0)
-                    {
-                        var row2AndColCandidates = boxCol1Candidates.Intersect(row3Candidates);
-                        if (row2AndColCandidates.Length == 1)
-                        {
-                            var solverKind = "BlockedRow2+ColsSolver";
-                            return GetSolution(index, i, y, row2AndColCandidates[0],solverKind);
-                        }
-                    }
-
-                    // row1[col3] has a value, so col3 don't need to participate in providing a candidate
-                    if (boxCol1Candidates.Length > 0 && row2Candidates.Length > 0 &&
-                        boxCol1[row2Index] == 0 && boxCol1[row3Index] != 0)
-                    {
-                        var row2AndColCandidates = boxCol1Candidates.Intersect(row2Candidates);
-                        if (row2AndColCandidates.Length == 1)
-                        {
-                            var solverKind = "BlockedRow3+ColsSolver";
-                            return GetSolution(index, i, y, row2AndColCandidates[0],solverKind);
-                        }
-                    }
-*/
 
                     // the following set of cases involve a row or column with:
                     // all cells filled, such that a row or column doesn't need to participate in providing a candidate
@@ -308,13 +263,13 @@ namespace sudoku_solver
                         if (col3Blocked && 
                             col2Candidates.Length == 1)
                         {
-                            var solverKind = "Col3BlockedCol2Candidate";
+                            var solverKind = nameof(Strategy.Column2CandidateColumn3Blocked);
                             return GetSolution(index, i, y, col2Candidates[0],solverKind);
                         }
                     }
 
 
-                    (bool solved, Solution solution) CheckForBlockedCellCandidates(ReadOnlySpan<int> candidate1, ReadOnlySpan<int> candidate2, string solverKind)
+                    (bool solved, Solution solution) CheckForIntersectionCandidates(ReadOnlySpan<int> candidate1, ReadOnlySpan<int> candidate2, string solverKind)
                     {
                         var candidates = candidate1.Intersect(candidate2);
                         if (candidates.Length == 1)
@@ -323,81 +278,8 @@ namespace sudoku_solver
                         }
                         return (false, Solution.False);
                     }
-
-
-                    /* 
-
-                    continue;
-
-                    // row 2 == 0; row 3 != 0
-                    // row 2 needs to match columns; row 3 values need to be considered
-                    var row2AndColumnCandidates = adjRow2Candidates.Intersect(boxCol1Candidates);
-                    var row2AndColumnCandidatesNarrowed = row2AndColumnCandidates.DisjointSet(adjRow3Candidates);
-                    if (row2AndColumnCandidatesNarrowed.Length == 1 && boxRow2[0] == 0 && boxRow3[0] != 0)
-                    {
-                        var solverKind = "unknown";
-                        return GetSolution(index, i, y, row2AndColumnCandidatesNarrowed[0],solverKind);
-                    }
-
-                    if (row2AndColumnCandidatesNarrowed.Length == 1 && boxRow2[0] != 0 && boxRow3[0] == 0)
-                    {
-                        var solverKind = "unknown";
-                        return GetSolution(index, i, y, row2AndColumnCandidatesNarrowed[0],solverKind);
-                    }
-
-                    // row 2 != 0; row 3 == 0
-                    // row 3 needs to match columns; row 2 values need to be considered
-                    var row3AndColumnCandidates = adjRow3Candidates.Intersect(boxCol1Candidates);
-                    var row3AndColumnCandidatesNarrowed = row3AndColumnCandidates.DisjointSet(adjRow2Candidates);
-                    if (row3AndColumnCandidatesNarrowed.Length == 1 && boxRow2[0] != 0 && boxRow3[0] == 0)
-                    {
-                        var solverKind = "unknown";
-                        return GetSolution(index, i, y, row3AndColumnCandidatesNarrowed[0],solverKind);
-                    }
-
-                    if (row3AndColumnCandidatesNarrowed.Length == 1 && boxRow2[0] == 0 && boxRow3[0] != 0)
-                    {
-                        var solverKind = "unknown";
-                        return GetSolution(index, i, y, row3AndColumnCandidatesNarrowed[0],solverKind);
-                    }
-
-                    // row 3 == 0; row 2 == 0
-                    // col 2 == 0; col 3 != 0
-                    var col2AndRowCandidates = col2Candidates.Intersect(boxRow1Candidates);
-                    var col2AndRowCandidatesNarrowed = col2AndRowCandidates.DisjointSet(col3Candidates);
-                    if (col2AndRowCandidatesNarrowed.Length == 1 && boxCol2[i] == 0 && boxCol3[i] != 0)
-                    {
-                        var solverKind = "unknown";
-                        return GetSolution(index, i, y, col2AndRowCandidatesNarrowed[0],solverKind);
-                    }
-
-                    // row 3 == 0; row 2 == 0
-                    // col 2 != 0; col 3 == 0
-                    var col3AndRowCandidates = col3Candidates.Intersect(boxRow1Candidates);
-                    var col3AndRowCandidatesNarrowed = col3AndRowCandidates.DisjointSet(col2Candidates);
-                    if (col3AndRowCandidatesNarrowed.Length == 1 && boxCol2[i] != 0 && boxCol3[i] == 0)
-                    {
-                        var solverKind = "unknown";
-                        return GetSolution(index, i, y, col3AndRowCandidatesNarrowed[0],solverKind);
-                    }
-
-                    // following set of cases are more complicated
-                    // they enable more incomplete rows or columns
-
-                    // column 2 and 3 and row2 project value
-                    // row 3, column 3 has a value
-                    // As a result, row 2, column 3 should be projected value
-
-                    if (row2AndColumnCandidates.Length == 1 && boxRow3[y] != 0)
-                    {
-                        var solverKind = "unknown";
-                        return GetSolution(index, i, y, row2AndColumnCandidates[0],solverKind);
-                    }
-
-                    // Full column forces projection of value into another column
-
-                    */  
                 }
+
 
                 Solution GetSolution(int box, int row, int column, int value, string solverKind)
                 {

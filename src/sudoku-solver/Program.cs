@@ -28,7 +28,7 @@ namespace sudoku_solver
 
             if (solved)
             {
-                DrawPuzzle(puzzle, new Solution(){Solved = false});
+                Puzzle.DrawPuzzle(puzzle, new Solution(){Solved = false});
                 WriteLine("Puzzle is solved!");
                 return;
             }
@@ -51,7 +51,7 @@ namespace sudoku_solver
                 }
                 
                 WriteLine($"{attempts} solutions attempted.");
-                DrawPuzzle(puzzle, solution);
+                Puzzle.DrawPuzzle(puzzle, solution);
                 WriteLine();
                 solved = puzzle.IsSolved();
                 if (solution.Solved && solved)
@@ -68,66 +68,9 @@ namespace sudoku_solver
             if (!solved)
             {
                 WriteLine($"Solved cells: {puzzle.Solved}; Remaining: {81 - puzzle.Solved}");
+                WriteLine(puzzle);
             }
             WriteLine($"{iterations} iterations of solutions used.");
         }
-
-        public static void DrawPuzzle(Puzzle puzzle, Solution solution)
-        {
-            PrintColumnSolution(solution);
-
-            for (int i = 0; i < 9; i++)
-            {
-                var row = puzzle.GetRow(i);
-
-                if (i == 3 || i == 6)
-                {
-                    WriteLine("------+-------+------");
-                }
-                
-                for (int j = 0; j < 9; j++)
-                {
-                    if (j == 3 || j == 6)
-                    {
-                        Write($"| {row.Segment[j]} ");
-                    }
-                    else if (j == 8)
-                    {
-                        Write($"{row.Segment[j]}");
-                    }
-                    else
-                    {
-                        Write($"{row.Segment[j]} ");
-                    }
-                }
-
-                if (solution.Solved && i == solution.Row)
-                {
-                    Write("*");
-                }
-
-                WriteLine();
-            }
-
-            void PrintColumnSolution(Solution solution)
-            {
-                if (!solution.Solved)
-                {
-                    return;
-                }
-
-                for(int i = 0; i < solution.Column; i++)
-                {
-                    Write("  ");
-                    if (i == 2 || i == 5)
-                    {
-                        Write("  ");
-                    }
-                }
-                Write("*");
-                WriteLine();
-            }
-        }
-
     }
 }

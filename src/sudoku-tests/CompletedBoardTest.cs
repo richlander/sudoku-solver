@@ -14,20 +14,20 @@ namespace sudoku_tests
         // The targeted puzzle is already complete and should be detected as such
         // Puzzle: 974236158638591742125487936316754289742918563589362417867125394253649871491873625
 
+        string _board = "974236158638591742125487936316754289742918563589362417867125394253649871491873625";
+
         [Fact]
         public void CheckCompletedPuzzle()
         {
-            var board = "974236158638591742125487936316754289742918563589362417867125394253649871491873625";
-            var puzzle = new Puzzle(board);
+            var puzzle = new Puzzle(_board);
             var solved = puzzle.IsSolved();
             Assert.True(solved,"Puzzle should be solved.");
         }
 
         [Fact]
-        public void AttemptToSolvedCompletedPuzzle()
+        public void AttemptToSolveCompletedPuzzle()
         {
-            var board = "974236158638591742125487936316754289742918563589362417867125394253649871491873625";
-            var puzzle = new Puzzle(board);
+            var puzzle = new Puzzle(_board);
             var solver = new NakedSinglesSolver(puzzle);
             var solved = puzzle.Solve(solver);
             Assert.True(solved, "Puzzle should be solved.");
