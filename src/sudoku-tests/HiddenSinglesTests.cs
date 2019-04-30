@@ -131,5 +131,30 @@ namespace sudoku_tests
             Assert.True(solution.Solved && solution.Value == expectedValue, "Box should be solved.");
         }
 
+
+        [SolverStrategy(Strategy.ColumnLastPossibleSlot)]
+        [Fact]
+        public void ColumnLastPossibleSlotBox1Blocked()
+        {
+            var board = "..2.3.1.8...1.83..831.2.5..36..51274.1.243.56254.6..311.3.8.6.5.......13..531.4..";
+            var puzzle = new Puzzle(board);
+            var solver = new HiddenSinglesSolver(puzzle);
+            var solution = solver.Solve(8);
+            var expectedValue = 7;
+            Assert.True(solution.Solved && solution.Value == expectedValue, "Box should be solved.");
+        }
+
+
+        [SolverStrategy(Strategy.ColumnLastPossibleSlot)]
+        [Fact]
+        public void ColumnLastPossibleSlotBox2Blocked()
+        {
+            var board = "..2.3.1.8...1.83..831.2.5..36..51274.1.243.56254.6..311.3.8.6.5......713..531.4..";
+            var puzzle = new Puzzle(board);
+            var solver = new HiddenSinglesSolver(puzzle);
+            var solution = solver.Solve(8);
+            var expectedValue = 8;
+            Assert.True(solution.Solved && solution.Value == expectedValue, "Box should be solved.");
+        }
     }
 }

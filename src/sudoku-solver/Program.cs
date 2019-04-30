@@ -62,6 +62,7 @@ namespace sudoku_solver
                 if (!puzzle.Validate().Valid)
                 {
                     WriteLine("Something is busted!");
+                    break;
                 }
             }
 

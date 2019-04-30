@@ -81,10 +81,12 @@ namespace sudoku_solver
 
                 // neighboring boxess
                 // horizontal adjacent box 1 -- rows
+                var ahnb1Row1 = ahnb1.GetRow(row1Index);
                 var ahnb1Row2 = ahnb1.GetRow(row2Index);
                 var ahnb1Row3 = ahnb1.GetRow(row3Index);
 
                 // horizontal adjacent box 2 -- rows
+                var ahnb2Row1 = ahnb1.GetRow(row1Index);
                 var ahnb2Row2 = ahnb2.GetRow(row2Index);
                 var ahnb2Row3 = ahnb2.GetRow(row3Index);
 
@@ -98,10 +100,11 @@ namespace sudoku_solver
                 var currentRow = _puzzle.GetRow(currentRowIndex);
 
                 // get all values in box
-                var boxValues = box.AsValues();
+                var boxLine = box.AsLine();
+                //var boxValues = box.AsValues();
 
                 // calculate full set of illegal values for row 1
-                var boxRow1IllegalValues = boxValues.Union(currentRow.Segment);
+                var boxRow1IllegalValues = boxLine.Union(currentRow);
 
                 // determine disjoint set with baseline row -- looking for values in that row
                 var row2Candidates = adjRow2Union.DisjointSet(boxRow1IllegalValues);
@@ -153,7 +156,7 @@ namespace sudoku_solver
                     var currentCol = _puzzle.GetColumn(currentColIndex);
 
                     // calculate full set of illegal values for col 1
-                    var boxCol1IllegalValues = boxValues.Union(currentCol.Segment);
+                    var boxCol1IllegalValues = boxLine.Union(currentCol);
 
                     // determine union of values of cols
                     var col2Union = avnb1Col2.Union(avnb2Col2);
@@ -268,10 +271,185 @@ namespace sudoku_solver
                         }
                     }
 
+                    // following set of cases test hidden singles in columns or rows
+
+                    // pattern
+                    // box 1 col1 is full
+                    // box 2 has one value not in col1
+                    // only one slot available in col1 in current box
+                    // means that current cell must have that value
+
+                    {
+                        var solverCol = nameof(Strategy.ColumnLastPossibleSlot);
+                        bool solved;
+                        Solution solution;
+
+                        // start with columns
+                        // test each cell in avnb1.col1
+                        // avnb2 presents candidate
+                        if (avnb1Col1.GetUnsolvedCount() == 0 &&
+                            ((solved, solution) = CheckForDisjointCandidates(avnb2.AsLine().Segment, currentCol.Segment, solverCol)).solved &&
+                            !currentCol.ContainsValue(solution.Value) &&
+                            !boxLine.ContainsValue(solution.Value) &&
+                            CheckForNonZeroValueOrRowHasValue(boxCol1[row2Index], solution.Value, box, row2Index) &&
+                            CheckForNonZeroValueOrRowHasValue(boxCol1[row3Index], solution.Value, box, row3Index) &&
+                            CheckBoxForRowValues(solution.Value,ahnb1,i,0,1,2))
+
+
+                        {
+                            return solution;
+                        }
+
+                        // test avnb2.col1 solved
+                        // avnb1 presents candidate
+                        if (avnb2Col1.GetUnsolvedCount() == 0 &&
+                            ((solved, solution) = CheckForDisjointCandidates(avnb1.AsLine().Segment, currentCol.Segment, solverCol)).solved &&
+                            !currentCol.ContainsValue(solution.Value) &&
+                            !boxLine.ContainsValue(solution.Value) &&
+                            CheckForNonZeroValueOrRowHasValue(boxCol1[row2Index], solution.Value, box, row2Index) &&
+                            CheckForNonZeroValueOrRowHasValue(boxCol1[row3Index], solution.Value, box, row3Index))
+
+
+                        {
+                            return solution;
+                        }
+
+                        // try rows
+
+                        // test ahnb1.col1 solved
+                        // ahnb2 presents candidate
+                        var solverRow = nameof(Strategy.RowLastPossibleSlot);
+                        if (ahnb1Row1.GetUnsolvedCount() == 0 &&
+                            ((solved, solution) = CheckForDisjointCandidates(ahnb2.AsLine().Segment, currentRow.Segment, solverRow)).solved &&
+                            !currentRow.ContainsValue(solution.Value) &&
+                            !boxLine.ContainsValue(solution.Value) &&
+                            CheckForNonZeroValueOrColHasValue(boxRow1[col2Index], solution.Value, box, col2Index) &&
+                            CheckForNonZeroValueOrColHasValue(boxRow1[col3Index], solution.Value, box, col3Index))
+
+                        {
+                            return solution;
+                        }
+
+                        // test ahnb2.col1 solved
+                        // ahnb1 presents candidate
+                        if (ahnb2Row1.GetUnsolvedCount() == 0 &&
+                            boxRow1.IsJustOneElementUnsolved().justOne &&
+                            ((solved, solution) = CheckForDisjointCandidates(ahnb1.AsLine().Segment, currentRow.Segment, solverRow)).solved &&
+                            !currentRow.ContainsValue(solution.Value) &&
+                            !boxLine.ContainsValue(solution.Value))
+                        {
+                            return solution;
+                        }
+                    }
+
+                    // pattern
+                    // box 1 col1 is full
+                    // box 2 has one value not in col1
+                    // multiple slots available in col1 in current box
+                    // other slots have the same value filled from a row or column
+                    // means that current cell must have that value
+
+                    continue;
+                    
+                    {
+                        var solverCol = nameof(Strategy.ColumnLastPossibleSlot);
+                        bool solved;
+                        Solution solution;
+
+                        // test avnb1.col1 solved
+                        // avnb2 presents candidate
+                        if (((solved, solution) = CheckForDisjointCandidates(avnb2.AsLine().Segment, currentCol.Segment, solverCol)).solved &&
+                            !currentCol.ContainsValue(solution.Value) &&
+                            !boxLine.ContainsValue(solution.Value) &&
+                            CheckForNonZeroValueOrRowHasValue(solution.Value, boxCol1[row2Index], box, row2Index) &&
+                            CheckForNonZeroValueOrRowHasValue(solution.Value, boxCol1[row3Index], box, row3Index) &&
+                            CheckBoxForRowValues(solution.Value,ahnb1,i,0,1,2))
+                        {
+                            return solution;
+                        }
+
+                        // test avnb2.col1 solved
+                        // avnb1 presents candidate
+                        if (avnb2Col1.GetUnsolvedCount() == 0 &&
+                            ((solved, solution) = CheckForDisjointCandidates(avnb1.AsLine().Segment, currentCol.Segment, solverCol)).solved &&
+                            !currentCol.ContainsValue(solution.Value) &&
+                            !boxLine.ContainsValue(solution.Value) &&
+                            CheckForNonZeroValueOrRowHasValue(solution.Value, boxCol1[row2Index], box, row2Index) &&
+                            CheckForNonZeroValueOrRowHasValue(solution.Value, boxCol1[row3Index], box, row3Index))
+ 
+                        {
+                            return solution;
+                        }
+                    }
+
+                    bool CheckBoxForRowValues(int searchValue, Box box, int row, params int[] indices)
+                    {
+                        var targetRow = box.GetRow(row);
+                        foreach(int index in indices)
+                        {
+                            if (!CheckForNonZeroValueOrColHasValue(searchValue, targetRow[index], box, i))
+                            {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+
+                    bool CheckForNonZeroValueOrRowHasValue(int searchValue, int cellValue, Box box, int row)
+                    {
+                        // get complete row that includes current row of box
+                        var rowIndex = box.GetRowOffsetForBox() + row;
+                        //TODO: consider an overload that only returns non-zero values
+                        var targetRow = _puzzle.GetRow(rowIndex);
+
+
+                        if (cellValue != 0)
+                        {
+                            return true;
+                        }
+
+                        if (targetRow.Segment.Contains(searchValue))
+                        {
+                            return true;
+                        }
+
+                        return false;
+                    }
+
+                    bool CheckForNonZeroValueOrColHasValue(int searchValue, int cellValue, Box box, int col)
+                    {
+                        // get complete row that includes current row of box
+                        var colIndex = box.GetColumnOffsetForBox() + col;
+                        //TODO: consider an overload that only returns non-zero values
+                        var targetCol = _puzzle.GetColumn(colIndex);
+
+
+                        if (cellValue != 0)
+                        {
+                            return true;
+                        }
+
+                        if (targetCol.Segment.Contains(searchValue))
+                        {
+                            return true;
+                        }
+
+                        return false;
+                    }
 
                     (bool solved, Solution solution) CheckForIntersectionCandidates(ReadOnlySpan<int> candidate1, ReadOnlySpan<int> candidate2, string solverKind)
                     {
                         var candidates = candidate1.Intersect(candidate2);
+                        if (candidates.Length == 1)
+                        {
+                            return (true, GetSolution(index, i, y, candidates[0],solverKind));
+                        }
+                        return (false, Solution.False);
+                    }
+
+                    (bool solved, Solution solution) CheckForDisjointCandidates(ReadOnlySpan<int> line, ReadOnlySpan<int> candidate2, string solverKind)
+                    {
+                        var candidates = line.DisjointSet(candidate2);
                         if (candidates.Length == 1)
                         {
                             return (true, GetSolution(index, i, y, candidates[0],solverKind));
