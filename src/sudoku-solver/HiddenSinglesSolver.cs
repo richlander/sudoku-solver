@@ -226,7 +226,6 @@ namespace sudoku_solver
                         }
                     }
 
-
                     // check columns
                     if (boxCol1Candidates.Length > 0)                    
                     {
@@ -280,6 +279,7 @@ namespace sudoku_solver
                     // means that current cell must have that value
 
                     {
+                         
                         var solverCol = nameof(Strategy.ColumnLastPossibleSlot);
                         bool solved;
                         Solution solution;
@@ -287,32 +287,33 @@ namespace sudoku_solver
                         // start with columns
                         // test each cell in avnb1.col1
                         // avnb2 presents candidate
-                        if (avnb1Col1.GetUnsolvedCount() == 0 &&
+                        if (//avnb1Col1.GetUnsolvedCount() == 0 &&
                             ((solved, solution) = CheckForDisjointCandidates(avnb2.AsLine().Segment, currentCol.Segment, solverCol)).solved &&
-                            !currentCol.ContainsValue(solution.Value) &&
+                            //!currentCol.ContainsValue(solution.Value) &&
                             !boxLine.ContainsValue(solution.Value) &&
-                            CheckForNonZeroValueOrRowHasValue(boxCol1[row2Index], solution.Value, box, row2Index) &&
-                            CheckForNonZeroValueOrRowHasValue(boxCol1[row3Index], solution.Value, box, row3Index) &&
-                            CheckBoxForRowValues(solution.Value,ahnb1,i,0,1,2))
-
-
+                            CheckForNonZeroValueOrRowHasValue(solution.Value, boxCol1[row2Index], box, row2Index) &&
+                            CheckForNonZeroValueOrRowHasValue(solution.Value, boxCol1[row3Index], box, row3Index) &&
+                            CheckBoxForRowValues(solution.Value,avnb1,col1Index,0,1,2)
+                        )
                         {
                             return solution;
                         }
 
                         // test avnb2.col1 solved
                         // avnb1 presents candidate
-                        if (avnb2Col1.GetUnsolvedCount() == 0 &&
+                        if (//avnb2Col1.GetUnsolvedCount() == 0 &&
                             ((solved, solution) = CheckForDisjointCandidates(avnb1.AsLine().Segment, currentCol.Segment, solverCol)).solved &&
-                            !currentCol.ContainsValue(solution.Value) &&
+                            //!currentCol.ContainsValue(solution.Value) &&
                             !boxLine.ContainsValue(solution.Value) &&
-                            CheckForNonZeroValueOrRowHasValue(boxCol1[row2Index], solution.Value, box, row2Index) &&
-                            CheckForNonZeroValueOrRowHasValue(boxCol1[row3Index], solution.Value, box, row3Index))
-
-
+                            CheckForNonZeroValueOrRowHasValue(solution.Value, boxCol1[row2Index], box, row2Index) &&
+                            CheckForNonZeroValueOrRowHasValue(solution.Value, boxCol1[row3Index], box, row3Index)&&
+                            CheckBoxForRowValues(solution.Value,avnb2,col1Index,0,1,2)
+                            )
                         {
                             return solution;
                         }
+
+                        /* 
 
                         // try rows
 
@@ -340,6 +341,7 @@ namespace sudoku_solver
                         {
                             return solution;
                         }
+                        */
                     }
 
                     // pattern
@@ -349,8 +351,7 @@ namespace sudoku_solver
                     // other slots have the same value filled from a row or column
                     // means that current cell must have that value
 
-                    continue;
-                    
+/*                
                     {
                         var solverCol = nameof(Strategy.ColumnLastPossibleSlot);
                         bool solved;
@@ -381,6 +382,7 @@ namespace sudoku_solver
                             return solution;
                         }
                     }
+                    */
 
                     bool CheckBoxForRowValues(int searchValue, Box box, int row, params int[] indices)
                     {
@@ -401,7 +403,6 @@ namespace sudoku_solver
                         var rowIndex = box.GetRowOffsetForBox() + row;
                         //TODO: consider an overload that only returns non-zero values
                         var targetRow = _puzzle.GetRow(rowIndex);
-
 
                         if (cellValue != 0)
                         {
