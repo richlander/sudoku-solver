@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using static System.Console;
 
 namespace sudoku_solver
@@ -50,66 +51,56 @@ namespace sudoku_solver
                 solver
             };
 
-            foreach ((Solution solution, int attempts) in TrySolvers(solvers))
+            foreach (var solution in TrySolvers(solvers))
             {
-                if (!solution.Solved)
-                {
-                    break;
-                }
             }
             return IsSolved();
         }
 
         public bool Solve(IReadOnlyCollection<ISolver> solvers)
         {
-            foreach((Solution solution, int attempts) in TrySolvers(solvers))
+            foreach(var solution in TrySolvers(solvers))
             {
-                if (!solution.Solved)
-                {
-                    break;
-                }
             }
             return IsSolved();
         }
 
-        public IEnumerable<(Solution Solution, int attempts)> TrySolvers(IReadOnlyCollection<ISolver> solvers)
+        public IEnumerable<Solution> TrySolvers(IReadOnlyCollection<ISolver> solvers)
         {
-            var solved = true;
-            var attempts = 0;
-            while (solved)
-            {
-                (var solution, var attempts_) = Solve(solvers);
-                solved = solution.Solved;
-                attempts += attempts_;
-                if (solved)
-                {
-                    Update(solution);
-                    yield return (solution, attempts);
-                    attempts = 0;
-                }
-            }
+            var isEffective = true;
+            var solverCollection = solvers.ToArray();
+            var max = solverCollection.Length -1;
+            var index = 0;
 
-            yield return (new Solution{Solved=false}, attempts);
-
-            (Solution solution, int attempts) Solve(IReadOnlyCollection<ISolver> solverCollection)
+            // continue until
+            // IsEffective == false for all solvers
+            // for solvers that reports IsEffective == true but return no success
+            while (isEffective)
             {
-                var attempts = 0;
-                foreach (var solver in solverCollection)
+                isEffective = false;
+                var solver = solverCollection[index];
+                if (solver.IsEffective())
                 {
-                    if (!solver.IsEffective())
-                    {
-                        continue;
-                    }
                     foreach (var solution in solver.FindSolution())
                     {
-                        attempts++;
                         if (solution.Solved)
                         {
-                            return (solution, attempts);
+                            Update(solution);
+                            isEffective = true;   
                         }
+                        yield return solution;
                     }
                 }
-                return (new Solution{Solved=false}, attempts);
+
+                if (isEffective && index != 0)
+                {
+                    index = 0;
+                }
+                else if (!isEffective && index < max)
+                {
+                    isEffective = true;
+                    index++;
+                }
             }
         }
         public PuzzleState Validate()

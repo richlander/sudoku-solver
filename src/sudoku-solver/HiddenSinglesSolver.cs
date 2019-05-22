@@ -280,116 +280,98 @@ namespace sudoku_solver
 
                     {
                          
-                        var solverCol = nameof(Strategy.ColumnLastPossibleSlot);
+                        var solverKind = nameof(Strategy.ColumnLastPossibleSlot);
                         bool solved;
                         Solution solution;
 
                         // start with columns
                         // test each cell in avnb1.col1
                         // avnb2 presents candidate
-                        if (//avnb1Col1.GetUnsolvedCount() == 0 &&
-                            ((solved, solution) = CheckForDisjointCandidates(avnb2.AsLine().Segment, currentCol.Segment, solverCol)).solved &&
-                            //!currentCol.ContainsValue(solution.Value) &&
+                        if (((solved, solution) = CheckForDisjointCandidates(avnb2.AsLine().Segment, currentCol.Segment, solverKind)).solved &&
                             !boxLine.ContainsValue(solution.Value) &&
-                            CheckForNonZeroValueOrRowHasValue(solution.Value, boxCol1[row2Index], box, row2Index) &&
-                            CheckForNonZeroValueOrRowHasValue(solution.Value, boxCol1[row3Index], box, row3Index) &&
-                            CheckBoxForRowValues(solution.Value,avnb1,col1Index,0,1,2)
+                            !currentRow.Segment.Contains(solution.Value) &&
+                            CheckForValueInCellOrColumn(solution.Value,box,col1Index,row2Index,row3Index) &&
+                            CheckForValueInCellOrColumn(solution.Value,avnb1,col1Index,0,1,2)
                         )
                         {
+                            solution.SolverKind += "-1";
                             return solution;
                         }
 
                         // test avnb2.col1 solved
                         // avnb1 presents candidate
-                        if (//avnb2Col1.GetUnsolvedCount() == 0 &&
-                            ((solved, solution) = CheckForDisjointCandidates(avnb1.AsLine().Segment, currentCol.Segment, solverCol)).solved &&
-                            //!currentCol.ContainsValue(solution.Value) &&
+                        if (((solved, solution) = CheckForDisjointCandidates(avnb1.AsLine().Segment, currentCol.Segment, solverKind)).solved &&
                             !boxLine.ContainsValue(solution.Value) &&
-                            CheckForNonZeroValueOrRowHasValue(solution.Value, boxCol1[row2Index], box, row2Index) &&
-                            CheckForNonZeroValueOrRowHasValue(solution.Value, boxCol1[row3Index], box, row3Index)&&
-                            CheckBoxForRowValues(solution.Value,avnb2,col1Index,0,1,2)
+                            !currentRow.Segment.Contains(solution.Value) &&
+                            CheckForValueInCellOrColumn(solution.Value,box,col1Index,row2Index,row3Index) &&
+                            CheckForValueInCellOrColumn(solution.Value,avnb2,col1Index,0,1,2)
                             )
                         {
-                            return solution;
+                                solution.SolverKind += "-2";
+                                return solution;
                         }
-
-                        /* 
-
-                        // try rows
-
-                        // test ahnb1.col1 solved
-                        // ahnb2 presents candidate
-                        var solverRow = nameof(Strategy.RowLastPossibleSlot);
-                        if (ahnb1Row1.GetUnsolvedCount() == 0 &&
-                            ((solved, solution) = CheckForDisjointCandidates(ahnb2.AsLine().Segment, currentRow.Segment, solverRow)).solved &&
-                            !currentRow.ContainsValue(solution.Value) &&
-                            !boxLine.ContainsValue(solution.Value) &&
-                            CheckForNonZeroValueOrColHasValue(boxRow1[col2Index], solution.Value, box, col2Index) &&
-                            CheckForNonZeroValueOrColHasValue(boxRow1[col3Index], solution.Value, box, col3Index))
-
-                        {
-                            return solution;
-                        }
-
-                        // test ahnb2.col1 solved
-                        // ahnb1 presents candidate
-                        if (ahnb2Row1.GetUnsolvedCount() == 0 &&
-                            boxRow1.IsJustOneElementUnsolved().justOne &&
-                            ((solved, solution) = CheckForDisjointCandidates(ahnb1.AsLine().Segment, currentRow.Segment, solverRow)).solved &&
-                            !currentRow.ContainsValue(solution.Value) &&
-                            !boxLine.ContainsValue(solution.Value))
-                        {
-                            return solution;
-                        }
-                        */
                     }
 
-                    // pattern
-                    // box 1 col1 is full
-                    // box 2 has one value not in col1
-                    // multiple slots available in col1 in current box
-                    // other slots have the same value filled from a row or column
-                    // means that current cell must have that value
-
-/*                
                     {
-                        var solverCol = nameof(Strategy.ColumnLastPossibleSlot);
+                         
+                        var solverKind = nameof(Strategy.RowLastPossibleSlot);
                         bool solved;
                         Solution solution;
 
-                        // test avnb1.col1 solved
-                        // avnb2 presents candidate
-                        if (((solved, solution) = CheckForDisjointCandidates(avnb2.AsLine().Segment, currentCol.Segment, solverCol)).solved &&
-                            !currentCol.ContainsValue(solution.Value) &&
+                        // sole for columns
+                        // test each cell in avhb1.row1
+                        // avhb2 presents candidate
+                        if (((solved, solution) = CheckForDisjointCandidates(ahnb2.AsLine().Segment, currentRow.Segment, solverKind)).solved &&
                             !boxLine.ContainsValue(solution.Value) &&
-                            CheckForNonZeroValueOrRowHasValue(solution.Value, boxCol1[row2Index], box, row2Index) &&
-                            CheckForNonZeroValueOrRowHasValue(solution.Value, boxCol1[row3Index], box, row3Index) &&
-                            CheckBoxForRowValues(solution.Value,ahnb1,i,0,1,2))
+                            !currentCol.Segment.Contains(solution.Value) &&
+                            CheckForValueInCellOrRow(solution.Value,box,row1Index,col2Index,col3Index) &&
+                            CheckForValueInCellOrRow(solution.Value,ahnb1,row1Index,0,1,2)
+                        )
                         {
+                            solution.SolverKind += "-1";
                             return solution;
                         }
 
-                        // test avnb2.col1 solved
-                        // avnb1 presents candidate
-                        if (avnb2Col1.GetUnsolvedCount() == 0 &&
-                            ((solved, solution) = CheckForDisjointCandidates(avnb1.AsLine().Segment, currentCol.Segment, solverCol)).solved &&
-                            !currentCol.ContainsValue(solution.Value) &&
+                        // test ahnb2.row1 solved
+                        // ahnb1 presents candidate
+                        if (((solved, solution) = CheckForDisjointCandidates(ahnb1.AsLine().Segment, currentRow.Segment, solverKind)).solved &&
                             !boxLine.ContainsValue(solution.Value) &&
-                            CheckForNonZeroValueOrRowHasValue(solution.Value, boxCol1[row2Index], box, row2Index) &&
-                            CheckForNonZeroValueOrRowHasValue(solution.Value, boxCol1[row3Index], box, row3Index))
- 
+                            !currentCol.Segment.Contains(solution.Value) &&
+                            CheckForValueInCellOrRow(solution.Value,box,row1Index,col2Index,col3Index) &&
+                            CheckForValueInCellOrRow(solution.Value,ahnb2,row1Index,0,1,2)
+                        )
                         {
-                            return solution;
+                                solution.SolverKind += "-2";
+                                return solution;
                         }
                     }
-                    */
 
-                    bool CheckBoxForRowValues(int searchValue, Box box, int row, params int[] indices)
                     {
-                        var targetRow = box.GetRow(row);
-                        foreach(int index in indices)
+                        var solverKind = nameof(Strategy.ColumnLastTwoPossibleSlots);
+
+                        if (currentCol.GetUnsolvedCount() == 2)
                         {
-                            if (!CheckForNonZeroValueOrColHasValue(searchValue, targetRow[index], box, i))
+                            var missingValues = currentCol.GetMissingValues();
+                            for(int k = 0; i < 2; k++)
+                            {
+                                var value = missingValues[k];
+                                var otherValue = missingValues[(k+1) % 2];
+                                if (currentRow.ContainsValue(value) &&
+                                    !boxLine.ContainsValue(otherValue))
+                                    {
+                                        return GetSolution(index,box.GetRowOffsetForBox() + row1Index, box.GetColumnOffsetForBox() + col1Index, otherValue, solverKind);
+                                    }
+                            }
+                        }
+                    }
+
+                    bool CheckForValueInCellOrColumn(int value, Box box, int column, params int[] rows)
+                    {
+                        var targetColumn = box.GetColumn(column);
+                        foreach(int row in rows)
+                        {
+                            if (targetColumn[row] == 0 ||
+                                !CheckColumnForValue(value, box, row))
                             {
                                 return false;
                             }
@@ -397,45 +379,38 @@ namespace sudoku_solver
                         return true;
                     }
 
-                    bool CheckForNonZeroValueOrRowHasValue(int searchValue, int cellValue, Box box, int row)
+                    bool CheckColumnForValue(int searchValue, Box box, int row)
                     {
                         // get complete row that includes current row of box
                         var rowIndex = box.GetRowOffsetForBox() + row;
                         //TODO: consider an overload that only returns non-zero values
                         var targetRow = _puzzle.GetRow(rowIndex);
 
-                        if (cellValue != 0)
-                        {
-                            return true;
-                        }
-
-                        if (targetRow.Segment.Contains(searchValue))
-                        {
-                            return true;
-                        }
-
-                        return false;
+                        return targetRow.Segment.Contains(searchValue);
                     }
 
-                    bool CheckForNonZeroValueOrColHasValue(int searchValue, int cellValue, Box box, int col)
+                  bool CheckForValueInCellOrRow(int value, Box box, int row, params int[] cols)
                     {
-                        // get complete row that includes current row of box
+                        var targetRow = box.GetRow(row);
+                        foreach(int col in cols)
+                        {
+                            if (targetRow[col] == 0 ||
+                               !CheckRowForValue(value, box, col))
+                            {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+
+                    bool CheckRowForValue(int searchValue, Box box, int col)
+                    {
+                        // get complete column that includes current column of box
                         var colIndex = box.GetColumnOffsetForBox() + col;
                         //TODO: consider an overload that only returns non-zero values
                         var targetCol = _puzzle.GetColumn(colIndex);
 
-
-                        if (cellValue != 0)
-                        {
-                            return true;
-                        }
-
-                        if (targetCol.Segment.Contains(searchValue))
-                        {
-                            return true;
-                        }
-
-                        return false;
+                        return targetCol.Segment.Contains(searchValue);
                     }
 
                     (bool solved, Solution solution) CheckForIntersectionCandidates(ReadOnlySpan<int> candidate1, ReadOnlySpan<int> candidate2, string solverKind)

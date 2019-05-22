@@ -71,6 +71,37 @@ namespace sudoku_solver
             return values;
         }
 
+        public ReadOnlySpan<int> GetMissingValues()
+        {
+            var missingValues = new int[9];
+            var values = GetValues();
+            var index = 0;
+            for (int i = 0; i < 9; i++)
+            {
+                if (!values[i])
+                {
+                    missingValues[index] = i;
+                    index++;
+                }
+            }
+            return missingValues.AsSpan().Slice(0,index);
+        }
+
+        public ReadOnlySpan<int> GetMissingIndices()
+        {
+            var indices = new int[9];
+            var index = -1;
+            for (int i = 0; i < Segment.Length; i++)
+            {
+                if (Segment[i] == 0)
+                {
+                    index++;
+                    indices[index] = i;
+                }
+            }
+            return indices.AsSpan().Slice(0,Math.Max(0, index));
+        }
+
         public ReadOnlySpan<int> Intersect(Line line)
         {
             return Segment.Intersect(line.Segment);

@@ -16,6 +16,8 @@ namespace sudoku_solver
         Column2BlockedColumn3CandidateRowSolver,
         Column2CandidateColumn3Blocked,
         ColumnLastPossibleSlot,
-        RowLastPossibleSlot
+        RowLastPossibleSlot,
+        RowLastTwoPossibleSlots,
+        ColumnLastTwoPossibleSlots,
     }
 }

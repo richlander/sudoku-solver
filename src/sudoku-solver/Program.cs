@@ -32,25 +32,23 @@ namespace sudoku_solver
                 WriteLine("Puzzle is solved!");
                 return;
             }
-            foreach ((var solution, var attempts) in puzzle.TrySolvers(solvers))
+
+            var solutionsFound = 0;
+            foreach (var solution in puzzle.TrySolvers(solvers))
             {
                 iterations++;
                 if (solution.Solved)
                 {
+                    solutionsFound++;
                     var solverKind = solution.SolverKind is null ? $"{solution.Solver}" : $"{solution.Solver}:{solution.SolverKind}";
                     WriteLine($"Solved cell: {solution.GetLocation()}; {solution.Value}");
                     WriteLine($"Solved by: {solverKind}");
-                }
-                else if (iterations == 0)
-                {
-                    WriteLine("No solutions found.");
                 }
                 else
                 {
                     WriteLine("No more solutions found.");
                 }
                 
-                WriteLine($"{attempts} solutions attempted.");
                 Puzzle.DrawPuzzle(puzzle, solution);
                 WriteLine();
                 solved = puzzle.IsSolved();
@@ -71,7 +69,8 @@ namespace sudoku_solver
                 WriteLine($"Solved cells: {puzzle.Solved}; Remaining: {81 - puzzle.Solved}");
                 WriteLine(puzzle);
             }
-            WriteLine($"{iterations} iterations of solutions used.");
+            WriteLine($"{solutionsFound} solutions found.");
+            //WriteLine($"{iterations} solutions attempted.");
         }
     }
 }
