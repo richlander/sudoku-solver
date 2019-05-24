@@ -63,7 +63,7 @@ namespace sudoku_solver
 
         public bool[] GetValues()
         {
-            var values = new bool[9];
+            var values = new bool[10];
             for (int i = 0; i < Segment.Length; i++)
             {
                 values[Segment[i]] = true;
@@ -76,7 +76,7 @@ namespace sudoku_solver
             var missingValues = new int[9];
             var values = GetValues();
             var index = 0;
-            for (int i = 0; i < 9; i++)
+            for (int i = 0; i < 10; i++)
             {
                 if (!values[i])
                 {
@@ -90,7 +90,7 @@ namespace sudoku_solver
         public ReadOnlySpan<int> GetMissingIndices()
         {
             var indices = new int[9];
-            var index = -1;
+            var index = 0;
             for (int i = 0; i < Segment.Length; i++)
             {
                 if (Segment[i] == 0)

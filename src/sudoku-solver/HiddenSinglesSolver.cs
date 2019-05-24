@@ -290,8 +290,8 @@ namespace sudoku_solver
                         if (((solved, solution) = CheckForDisjointCandidates(avnb2.AsLine().Segment, currentCol.Segment, solverKind)).solved &&
                             !boxLine.ContainsValue(solution.Value) &&
                             !currentRow.Segment.Contains(solution.Value) &&
-                            CheckForValueInCellOrColumn(solution.Value,box,col1Index,row2Index,row3Index) &&
-                            CheckForValueInCellOrColumn(solution.Value,avnb1,col1Index,0,1,2)
+                            CheckForValueInCellOrRow(solution.Value,box,col1Index,row2Index,row3Index) &&
+                            CheckForValueInCellOrRow(solution.Value,avnb1,col1Index,0,1,2)
                         )
                         {
                             solution.SolverKind += "-1";
@@ -303,8 +303,8 @@ namespace sudoku_solver
                         if (((solved, solution) = CheckForDisjointCandidates(avnb1.AsLine().Segment, currentCol.Segment, solverKind)).solved &&
                             !boxLine.ContainsValue(solution.Value) &&
                             !currentRow.Segment.Contains(solution.Value) &&
-                            CheckForValueInCellOrColumn(solution.Value,box,col1Index,row2Index,row3Index) &&
-                            CheckForValueInCellOrColumn(solution.Value,avnb2,col1Index,0,1,2)
+                            CheckForValueInCellOrRow(solution.Value,box,col1Index,row2Index,row3Index) &&
+                            CheckForValueInCellOrRow(solution.Value,avnb2,col1Index,0,1,2)
                             )
                         {
                                 solution.SolverKind += "-2";
@@ -324,8 +324,8 @@ namespace sudoku_solver
                         if (((solved, solution) = CheckForDisjointCandidates(ahnb2.AsLine().Segment, currentRow.Segment, solverKind)).solved &&
                             !boxLine.ContainsValue(solution.Value) &&
                             !currentCol.Segment.Contains(solution.Value) &&
-                            CheckForValueInCellOrRow(solution.Value,box,row1Index,col2Index,col3Index) &&
-                            CheckForValueInCellOrRow(solution.Value,ahnb1,row1Index,0,1,2)
+                            CheckForValueInCellOrColumn(solution.Value,box,row1Index,col2Index,col3Index) &&
+                            CheckForValueInCellOrColumn(solution.Value,ahnb1,row1Index,0,1,2)
                         )
                         {
                             solution.SolverKind += "-1";
@@ -337,8 +337,8 @@ namespace sudoku_solver
                         if (((solved, solution) = CheckForDisjointCandidates(ahnb1.AsLine().Segment, currentRow.Segment, solverKind)).solved &&
                             !boxLine.ContainsValue(solution.Value) &&
                             !currentCol.Segment.Contains(solution.Value) &&
-                            CheckForValueInCellOrRow(solution.Value,box,row1Index,col2Index,col3Index) &&
-                            CheckForValueInCellOrRow(solution.Value,ahnb2,row1Index,0,1,2)
+                            CheckForValueInCellOrColumn(solution.Value,box,row1Index,col2Index,col3Index) &&
+                            CheckForValueInCellOrColumn(solution.Value,ahnb2,row1Index,0,1,2)
                         )
                         {
                                 solution.SolverKind += "-2";
@@ -352,7 +352,7 @@ namespace sudoku_solver
                         if (currentCol.GetUnsolvedCount() == 2)
                         {
                             var missingValues = currentCol.GetMissingValues();
-                            for(int k = 0; i < 2; k++)
+                            for(int k = 0; k < 2; k++)
                             {
                                 var value = missingValues[k];
                                 var otherValue = missingValues[(k+1) % 2];
