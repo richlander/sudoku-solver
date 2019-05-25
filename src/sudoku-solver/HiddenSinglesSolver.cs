@@ -277,7 +277,7 @@ namespace sudoku_solver
                     // box 2 has one value not in col1
                     // only one slot available in col1 in current box
                     // means that current cell must have that value
-
+ 
                     {
                          
                         var solverKind = nameof(Strategy.ColumnLastPossibleSlot);
@@ -289,7 +289,7 @@ namespace sudoku_solver
                         // avnb2 presents candidate
                         if (((solved, solution) = CheckForDisjointCandidates(avnb2.AsLine().Segment, currentCol.Segment, solverKind)).solved &&
                             !boxLine.ContainsValue(solution.Value) &&
-                            !currentRow.Segment.Contains(solution.Value) &&
+                            !currentRow.ContainsValue(solution.Value) &&
                             CheckForValueInCellOrRow(solution.Value,box,col1Index,row2Index,row3Index) &&
                             CheckForValueInCellOrRow(solution.Value,avnb1,col1Index,0,1,2)
                         )
@@ -318,7 +318,7 @@ namespace sudoku_solver
                         bool solved;
                         Solution solution;
 
-                        // sole for columns
+                        // solve for rows
                         // test each cell in avhb1.row1
                         // avhb2 presents candidate
                         if (((solved, solution) = CheckForDisjointCandidates(ahnb2.AsLine().Segment, currentRow.Segment, solverKind)).solved &&
@@ -345,7 +345,7 @@ namespace sudoku_solver
                                 return solution;
                         }
                     }
-
+                    // Strategy where a column or row has two empty cells and one is constrained
                     {
                         var solverKind = nameof(Strategy.ColumnLastTwoPossibleSlots);
 
@@ -359,27 +359,32 @@ namespace sudoku_solver
                                 if (currentRow.ContainsValue(value) &&
                                     !boxLine.ContainsValue(otherValue))
                                     {
-                                        return GetSolution(index,box.GetRowOffsetForBox() + row1Index, box.GetColumnOffsetForBox() + col1Index, otherValue, solverKind);
+                                        return GetSolution(index, i, y, otherValue, solverKind);
                                     }
                             }
                         }
                     }
 
-                    bool CheckForValueInCellOrColumn(int value, Box box, int column, params int[] rows)
                     {
-                        var targetColumn = box.GetColumn(column);
-                        foreach(int row in rows)
+                        var solverKind = nameof(Strategy.RowLastTwoPossibleSlots);
+
+                        if (currentRow.GetUnsolvedCount() == 2)
                         {
-                            if (targetColumn[row] == 0 ||
-                                !CheckColumnForValue(value, box, row))
+                            var missingValues = currentRow.GetMissingValues();
+                            for(int k = 0; k < 2; k++)
                             {
-                                return false;
+                                var value = missingValues[k];
+                                var otherValue = missingValues[(k+1) % 2];
+                                if (currentCol.ContainsValue(value) &&
+                                    !boxLine.ContainsValue(otherValue))
+                                    {
+                                        return GetSolution(index, i, y, otherValue, solverKind);
+                                    }
                             }
                         }
-                        return true;
                     }
 
-                    bool CheckColumnForValue(int searchValue, Box box, int row)
+                    bool CheckRowForValue(int searchValue, Box box, int row)
                     {
                         // get complete row that includes current row of box
                         var rowIndex = box.GetRowOffsetForBox() + row;
@@ -389,13 +394,16 @@ namespace sudoku_solver
                         return targetRow.Segment.Contains(searchValue);
                     }
 
-                  bool CheckForValueInCellOrRow(int value, Box box, int row, params int[] cols)
+                    bool CheckForValueInCellOrColumn(int value, Box box, int row, params int[] cols)
                     {
-                        var targetRow = box.GetRow(row);
                         foreach(int col in cols)
                         {
-                            if (targetRow[col] == 0 ||
-                               !CheckRowForValue(value, box, col))
+                            var targetColumn = box.GetColumn(col);
+                            if (targetColumn[row] != 0 ||
+                                CheckColumnForValue(value, box, col))
+                            {
+                            }
+                            else
                             {
                                 return false;
                             }
@@ -403,7 +411,24 @@ namespace sudoku_solver
                         return true;
                     }
 
-                    bool CheckRowForValue(int searchValue, Box box, int col)
+                    bool CheckForValueInCellOrRow(int value, Box box, int col, params int[] rows)
+                    {
+                        foreach(int row in rows)
+                        {
+                            var targetRow = box.GetRow(row);
+                            if (targetRow[col] != 0 || 
+                               CheckRowForValue(value, box, row))
+                            {
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+
+                    bool CheckColumnForValue(int searchValue, Box box, int col)
                     {
                         // get complete column that includes current column of box
                         var colIndex = box.GetColumnOffsetForBox() + col;
