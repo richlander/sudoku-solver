@@ -279,8 +279,40 @@ namespace sudoku_solver
                     // means that current cell must have that value
  
                     {
-                         
                         var solverKind = nameof(Strategy.ColumnLastPossibleSlot);
+                        var candidates2 = avnb2.AsLine().DisjointSet(currentCol);
+
+                        foreach (var candidate in candidates2)
+                        {
+                            if (!boxLine.ContainsValue(candidate) &&
+                            !currentRow.ContainsValue(candidate) &&
+                            CheckForValueInCellOrRow(candidate,box,col1Index,row2Index,row3Index) &&
+                            CheckForValueInCellOrRow(candidate,avnb1,col1Index,0,1,2)
+                            )
+                            {
+                                solverKind += "-1";
+                                return GetSolution(index,i,y,candidate,solverKind);
+                            }
+
+                        }
+
+                        var candidates1 = avnb1.AsLine().DisjointSet(currentCol);
+
+                        foreach (var candidate in candidates1)
+                        {
+                            if (!boxLine.ContainsValue(candidate) &&
+                            !currentRow.ContainsValue(candidate) &&
+                            CheckForValueInCellOrRow(candidate,box,col1Index,row2Index,row3Index) &&
+                            CheckForValueInCellOrRow(candidate,avnb2,col1Index,0,1,2)
+                            )
+                            {
+                                solverKind += "-2";
+                                return GetSolution(index,i,y,candidate,solverKind);
+                            }
+
+                        }
+                    }
+/* 
                         bool solved;
                         Solution solution;
 
@@ -311,12 +343,46 @@ namespace sudoku_solver
                                 return solution;
                         }
                     }
-
+*/
                     {
-                         
                         var solverKind = nameof(Strategy.RowLastPossibleSlot);
+                        var candidates2 = ahnb2.AsLine().DisjointSet(currentRow);
+
+                        foreach(var candidate in candidates2)
+                        {
+                            if (!boxLine.ContainsValue(candidate) &&
+                                !currentCol.Segment.Contains(candidate) &&
+                                CheckForValueInCellOrColumn(candidate,box,row1Index,col2Index,col3Index) &&
+                                CheckForValueInCellOrColumn(candidate,ahnb1,row1Index,0,1,2)
+                            )
+                            {
+                                solverKind += "-2";
+                                return GetSolution(index,i,y,candidate,solverKind);
+
+                            }
+                        }
+
+                        var candidates1 = ahnb1.AsLine().DisjointSet(currentRow);
+
+                        foreach(var candidate in candidates1)
+                        {
+                            if (!boxLine.ContainsValue(candidate) &&
+                                !currentCol.Segment.Contains(candidate) &&
+                                CheckForValueInCellOrColumn(candidate,box,row1Index,col2Index,col3Index) &&
+                                CheckForValueInCellOrColumn(candidate,ahnb2,row1Index,0,1,2)
+                            )
+                            {
+                                solverKind += "-2";
+                                return GetSolution(index,i,y,candidate,solverKind);
+
+                            }
+                        }
+                    }
+/* 
                         bool solved;
                         Solution solution;
+
+
 
                         // solve for rows
                         // test each cell in avhb1.row1
@@ -345,6 +411,7 @@ namespace sudoku_solver
                                 return solution;
                         }
                     }
+*/
                     // Strategy where a column or row has two empty cells and one is constrained
                     {
                         var solverKind = nameof(Strategy.ColumnLastTwoPossibleSlots);
