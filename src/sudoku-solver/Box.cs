@@ -7,14 +7,16 @@ namespace sudoku_solver
     {
         private Puzzle _puzzle;
         private ReadOnlySpan<int> _board;
-        private int _offset;
+        private int _cellOffset;
+        private int _rowOffset;
         private int _index;
 
         public Box(Puzzle puzzle, int index)
         {
             _puzzle = puzzle;
             _board = puzzle.Board.Span;
-            _offset = GetOffset(index);
+            _cellOffset = GetCellOffset(index);
+            _rowOffset = (index / 3) * 3;
             _index = index;
         }
 
@@ -24,6 +26,11 @@ namespace sudoku_solver
         public Line FirstColumn => GetColumn(0);
         public Line InsideColumn => GetColumn(1);
         public Line LastColumn => GetColumn(2);
+        public Box FirstHorizontalNeighbor => _puzzle.GetBox((_index + 1) % 3 + _rowOffset);
+        public Box SecondHorizontalNeighbor => _puzzle.GetBox((_index + 2) % 3 + _rowOffset);
+        public Box FirstVerticalNeighbor => _puzzle.GetBox((_index + 3) % 9);
+        public Box SecondVerticalNeighbor => _puzzle.GetBox((_index + 6) % 9);
+
 
         public int GetUnsolvedCount()
         {
@@ -106,7 +113,7 @@ namespace sudoku_solver
             }
         }
 
-        private static int GetOffset(int index)
+        private static int GetCellOffset(int index)
         {
             var offset = (index / 3) * 27 + (index % 3) * 3;
             if (offset > 80)
@@ -118,12 +125,12 @@ namespace sudoku_solver
 
         public Line GetRow(int index)
         {
-            return new Line(_board.Slice(_offset + (9 * index), 3));
+            return new Line(_board.Slice(_cellOffset + (9 * index), 3));
         }
         
         public Line GetColumn(int index)
         {
-            var offset = _offset + index;
+            var offset = _cellOffset + index;
 
             return new Line
             {

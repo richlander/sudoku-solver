@@ -35,24 +35,11 @@ namespace sudoku_solver
         {
             var box = _puzzle.GetBox(index);
 
-            // adjacent neighboring boxes
-            // first two values in array are horizontal neighbors
-            // second two values in array are vertical neighbors
-
-            var offset = (index / 3) * 3;
-            int[] avn = new int[]
-            {
-                (index + 1) % 3 + offset,
-                (index + 2) % 3 + offset,
-                (index + 3) % 9,
-                (index + 6) % 9
-            };
-
             // get adjacent neighboring boxes
-            var ahnb1 = _puzzle.GetBox(avn[0]);
-            var ahnb2 = _puzzle.GetBox(avn[1]);
-            var avnb1 = _puzzle.GetBox(avn[2]);
-            var avnb2 = _puzzle.GetBox(avn[3]);
+            var ahnb1 = box.FirstHorizontalNeighbor;
+            var ahnb2 = box.SecondHorizontalNeighbor;
+            var avnb1 = box.FirstVerticalNeighbor;
+            var avnb2 = box.SecondVerticalNeighbor;
 
             // iterate over the three rows in the box
             // goal is to solve a cell in this row (not other rows)
@@ -77,7 +64,6 @@ namespace sudoku_solver
 
                 var boxRow2 = box.GetRow(row2Index);
                 var boxRow3 = box.GetRow(row3Index);
-
 
                 // neighboring boxess
                 // horizontal adjacent box 1 -- rows
