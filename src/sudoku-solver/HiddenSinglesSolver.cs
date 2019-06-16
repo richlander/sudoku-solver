@@ -43,7 +43,7 @@ namespace sudoku_solver
 
             // iterate over the three rows in the box
             // goal is to solve a cell in this row (not other rows)
-            // ititial logic (body of first for loop) can solve any row cell using
+            // initial logic (body of first for loop) can solve any row cell using
             // horizontal adjacent rows as input
             // later logic (body of embedded for loop) can solve a given cell, one at a time
             // using rows and/or columns as input
@@ -112,6 +112,7 @@ namespace sudoku_solver
                 // mostly targets row[column] cell
                 for (int y = 0; y < 3; y++)
                 {
+                    // check if current value is 0
                     if (boxRow1[y] != 0)
                     {
                         continue;
@@ -169,9 +170,9 @@ namespace sudoku_solver
                     var rowAndColumnCandidates = boxRow1Candidates.Intersect(boxCol1Candidates);
                     if (rowAndColumnCandidates.Length == 1)
                     {
+                        var solverKind = nameof(Strategy.RowColumnSolver);
                         if (boxCol1[i] == 0)
                         {
-                            var solverKind = nameof(Strategy.RowColumnSolver);
                             return GetSolution(index, i, y, rowAndColumnCandidates[0],solverKind);
                         }
                     }
@@ -191,21 +192,20 @@ namespace sudoku_solver
                     {
                         bool solved;
                         Solution solution;
-                        var solverKind1 = nameof(Strategy.Column2CandidateColumn3BlockedRowSolver);
+                        var solverKind = nameof(Strategy.ColumnCandidateColumnBlockedRowSolver);
 
                         // row1[col3] has a value, so col3 don't need to participate in providing a candidate
                         if (col2Candidates.Length > 0 &&
                             boxRow1[col2Index] == 0 && boxRow1[col3Index] != 0 &&
-                            ((solved, solution) = CheckForIntersectionCandidates(boxRow1Candidates, col2Candidates, solverKind1)).solved)
+                            ((solved, solution) = CheckForIntersectionCandidates(boxRow1Candidates, col2Candidates, solverKind)).solved)
                         {
                             return solution;
                         }
 
-                        var solverKind2 = nameof(Strategy.Column2BlockedColumn3CandidateRowSolver);
                         // row1[col2] has a value, so col2 don't need to participate in providing a candidate
                         if (col3Candidates.Length > 0 &&
                             boxRow1[col2Index] != 0 && boxRow1[col3Index] == 0 &&
-                            ((solved, solution) = CheckForIntersectionCandidates(boxRow1Candidates, col3Candidates, solverKind2)).solved)
+                            ((solved, solution) = CheckForIntersectionCandidates(boxRow1Candidates, col3Candidates, solverKind)).solved)
                         {
                             return solution;
                         }
@@ -216,21 +216,21 @@ namespace sudoku_solver
                     {
                         bool solved;
                         Solution solution;
-                        var solver1 = nameof(Strategy.Row2CandidateRow3BlockedColumnSolver);
+                        var solverKind = nameof(Strategy.RowCandidateRowBlockedColumnSolver);
+
                         // col1[row3] has a value, so row3 don't need to participate in providing a candidate
                         if (row2Candidates.Length > 0 &&
                             boxCol1[row2Index] == 0 && boxCol1[row3Index] != 0 &&
-                            ((solved, solution) = CheckForIntersectionCandidates(boxCol1Candidates, row2Candidates, solver1)).solved)
+                            ((solved, solution) = CheckForIntersectionCandidates(boxCol1Candidates, row2Candidates, solverKind)).solved)
                         {
                             return solution;
                         }
 
-                        var solver2 = nameof(Strategy.Row2BlockedRow3CandidateColumnSolver);
                         // col1[row2] has a value, so row2 don't need to participate in providing a candidate
                         // test: SolutionTwoSlotsEmptyInColumn
                         if (row3Candidates.Length > 0 &&
                             boxCol1[row2Index] != 0 && boxCol1[row3Index] == 0 &&
-                            ((solved, solution) = CheckForIntersectionCandidates(boxCol1Candidates, row3Candidates, solver2)).solved)
+                            ((solved, solution) = CheckForIntersectionCandidates(boxCol1Candidates, row3Candidates, solverKind)).solved)
                         {
                             return solution;
                         }
@@ -247,11 +247,38 @@ namespace sudoku_solver
 
                     if (boxCol1.GetUnsolvedCount() == 1)
                     {
+                        var solverKind = nameof(Strategy.ColumnCandidateColumnBlocked);
+
+                        // Column 1 one slot open, column 2 blocked, column 3 offers a candidate
+                        if (col2Blocked && 
+                            col3Candidates.Length == 1)
+                        {
+                            return GetSolution(index, i, y, col3Candidates[0],solverKind);
+                        }
+                        
+                        // Column 1 one slot open, column 2 offers a candidate, column 3 blocked
                         if (col3Blocked && 
                             col2Candidates.Length == 1)
                         {
-                            var solverKind = nameof(Strategy.Column2CandidateColumn3Blocked);
                             return GetSolution(index, i, y, col2Candidates[0],solverKind);
+                        }
+                    }
+
+                    if (boxRow1.GetUnsolvedCount() == 1)
+                    {
+                        var solverKind = nameof(Strategy.RowCandidateRowBlocked);
+                        // Row 1 one slot open, row 2 blocked, row 3 offers a candidate
+                        if (row2Blocked && 
+                            row3Candidates.Length == 1)
+                        {
+                            return GetSolution(index, i, y, row3Candidates[0],solverKind);
+                        }
+                        
+                        // Column 1 one slot open, column 2 offers a candidate, column 3 blocked
+                        if (row3Blocked && 
+                            row2Candidates.Length == 1)
+                        {
+                            return GetSolution(index, i, y, row2Candidates[0],solverKind);
                         }
                     }
 
@@ -265,21 +292,6 @@ namespace sudoku_solver
  
                     {
                         var solverKind = nameof(Strategy.ColumnLastPossibleSlot);
-                        var candidates2 = avnb2.AsLine().DisjointSet(currentCol);
-
-                        foreach (var candidate in candidates2)
-                        {
-                            if (!boxLine.ContainsValue(candidate) &&
-                            !currentRow.ContainsValue(candidate) &&
-                            CheckForValueInCellOrRow(candidate,box,col1Index,row2Index,row3Index) &&
-                            CheckForValueInCellOrRow(candidate,avnb1,col1Index,0,1,2)
-                            )
-                            {
-                                solverKind += "-1";
-                                return GetSolution(index,i,y,candidate,solverKind);
-                            }
-
-                        }
 
                         var candidates1 = avnb1.AsLine().DisjointSet(currentCol);
 
@@ -291,61 +303,29 @@ namespace sudoku_solver
                             CheckForValueInCellOrRow(candidate,avnb2,col1Index,0,1,2)
                             )
                             {
-                                solverKind += "-2";
                                 return GetSolution(index,i,y,candidate,solverKind);
                             }
 
                         }
-                    }
-/* 
-                        bool solved;
-                        Solution solution;
+                        
+                        var candidates2 = avnb2.AsLine().DisjointSet(currentCol);
 
-                        // start with columns
-                        // test each cell in avnb1.col1
-                        // avnb2 presents candidate
-                        if (((solved, solution) = CheckForDisjointCandidates(avnb2.AsLine().Segment, currentCol.Segment, solverKind)).solved &&
-                            !boxLine.ContainsValue(solution.Value) &&
-                            !currentRow.ContainsValue(solution.Value) &&
-                            CheckForValueInCellOrRow(solution.Value,box,col1Index,row2Index,row3Index) &&
-                            CheckForValueInCellOrRow(solution.Value,avnb1,col1Index,0,1,2)
-                        )
-                        {
-                            solution.SolverKind += "-1";
-                            return solution;
-                        }
-
-                        // test avnb2.col1 solved
-                        // avnb1 presents candidate
-                        if (((solved, solution) = CheckForDisjointCandidates(avnb1.AsLine().Segment, currentCol.Segment, solverKind)).solved &&
-                            !boxLine.ContainsValue(solution.Value) &&
-                            !currentRow.Segment.Contains(solution.Value) &&
-                            CheckForValueInCellOrRow(solution.Value,box,col1Index,row2Index,row3Index) &&
-                            CheckForValueInCellOrRow(solution.Value,avnb2,col1Index,0,1,2)
-                            )
-                        {
-                                solution.SolverKind += "-2";
-                                return solution;
-                        }
-                    }
-*/
-                    {
-                        var solverKind = nameof(Strategy.RowLastPossibleSlot);
-                        var candidates2 = ahnb2.AsLine().DisjointSet(currentRow);
-
-                        foreach(var candidate in candidates2)
+                        foreach (var candidate in candidates2)
                         {
                             if (!boxLine.ContainsValue(candidate) &&
-                                !currentCol.Segment.Contains(candidate) &&
-                                CheckForValueInCellOrColumn(candidate,box,row1Index,col2Index,col3Index) &&
-                                CheckForValueInCellOrColumn(candidate,ahnb1,row1Index,0,1,2)
+                            !currentRow.ContainsValue(candidate) &&
+                            CheckForValueInCellOrRow(candidate,box,col1Index,row2Index,row3Index) &&
+                            CheckForValueInCellOrRow(candidate,avnb1,col1Index,0,1,2)
                             )
                             {
-                                solverKind += "-2";
                                 return GetSolution(index,i,y,candidate,solverKind);
-
                             }
+
                         }
+                    }
+
+                    {
+                        var solverKind = nameof(Strategy.RowLastPossibleSlot);
 
                         var candidates1 = ahnb1.AsLine().DisjointSet(currentRow);
 
@@ -357,46 +337,27 @@ namespace sudoku_solver
                                 CheckForValueInCellOrColumn(candidate,ahnb2,row1Index,0,1,2)
                             )
                             {
-                                solverKind += "-2";
+                                return GetSolution(index,i,y,candidate,solverKind);
+
+                            }
+                        }
+
+                        var candidates2 = ahnb2.AsLine().DisjointSet(currentRow);
+
+                        foreach(var candidate in candidates2)
+                        {
+                            if (!boxLine.ContainsValue(candidate) &&
+                                !currentCol.Segment.Contains(candidate) &&
+                                CheckForValueInCellOrColumn(candidate,box,row1Index,col2Index,col3Index) &&
+                                CheckForValueInCellOrColumn(candidate,ahnb1,row1Index,0,1,2)
+                            )
+                            {
                                 return GetSolution(index,i,y,candidate,solverKind);
 
                             }
                         }
                     }
-/* 
-                        bool solved;
-                        Solution solution;
 
-
-
-                        // solve for rows
-                        // test each cell in avhb1.row1
-                        // avhb2 presents candidate
-                        if (((solved, solution) = CheckForDisjointCandidates(ahnb2.AsLine().Segment, currentRow.Segment, solverKind)).solved &&
-                            !boxLine.ContainsValue(solution.Value) &&
-                            !currentCol.Segment.Contains(solution.Value) &&
-                            CheckForValueInCellOrColumn(solution.Value,box,row1Index,col2Index,col3Index) &&
-                            CheckForValueInCellOrColumn(solution.Value,ahnb1,row1Index,0,1,2)
-                        )
-                        {
-                            solution.SolverKind += "-1";
-                            return solution;
-                        }
-
-                        // test ahnb2.row1 solved
-                        // ahnb1 presents candidate
-                        if (((solved, solution) = CheckForDisjointCandidates(ahnb1.AsLine().Segment, currentRow.Segment, solverKind)).solved &&
-                            !boxLine.ContainsValue(solution.Value) &&
-                            !currentCol.Segment.Contains(solution.Value) &&
-                            CheckForValueInCellOrColumn(solution.Value,box,row1Index,col2Index,col3Index) &&
-                            CheckForValueInCellOrColumn(solution.Value,ahnb2,row1Index,0,1,2)
-                        )
-                        {
-                                solution.SolverKind += "-2";
-                                return solution;
-                        }
-                    }
-*/
                     // Strategy where a column or row has two empty cells and one is constrained
                     {
                         var solverKind = nameof(Strategy.ColumnLastTwoPossibleSlots);
@@ -437,19 +398,8 @@ namespace sudoku_solver
                     }
 
                     {
-                        var solverKind = "LastInRowOrColumn";
+                        var solverKind = nameof(Strategy.LastInRowOrColumn);
                         (var valuesFound, var values) = FindMissingValues(currentCol,currentRow);
-
-                        if (valuesFound == 8)
-                        {
-                            for (int v = 1; v < 10;v++)
-                            {
-                                if (!values[v])
-                                {
-                                    return GetSolution(index,i,y,v,solverKind);
-                                }
-                            }
-                        }
 
                         for (var j = 1; j < 10;j++)
                         {
@@ -588,7 +538,6 @@ namespace sudoku_solver
                     {
                         // get complete column that includes current column of box
                         var colIndex = box.GetColumnOffsetForBox() + col;
-                        //TODO: consider an overload that only returns non-zero values
                         var targetCol = _puzzle.GetColumn(colIndex);
 
                         return targetCol.Segment.Contains(searchValue);
@@ -603,18 +552,7 @@ namespace sudoku_solver
                         }
                         return (false, Solution.False);
                     }
-
-                    (bool solved, Solution solution) CheckForDisjointCandidates(ReadOnlySpan<int> line, ReadOnlySpan<int> candidate2, string solverKind)
-                    {
-                        var candidates = line.DisjointSet(candidate2);
-                        if (candidates.Length == 1)
-                        {
-                            return (true, GetSolution(index, i, y, candidates[0],solverKind));
-                        }
-                        return (false, Solution.False);
-                    }
                 }
-
 
                 Solution GetSolution(int box, int row, int column, int value, string solverKind)
                 {
@@ -631,10 +569,7 @@ namespace sudoku_solver
                 }
             }
            
-            return new Solution
-            {
-                Solved = false
-            };
+            return Solution.False;
         }
     }
 }

@@ -10,14 +10,14 @@ namespace sudoku_solver
         RowSolver,
         ColumnSolver,
         RowColumnSolver,
-        Row2BlockedRow3CandidateColumnSolver,
-        Row2CandidateRow3BlockedColumnSolver,
-        Column2CandidateColumn3BlockedRowSolver,
-        Column2BlockedColumn3CandidateRowSolver,
-        Column2CandidateColumn3Blocked,
+        RowCandidateRowBlockedColumnSolver,
+        ColumnCandidateColumnBlockedRowSolver,
+        ColumnCandidateColumnBlocked,
+        RowCandidateRowBlocked,
         ColumnLastPossibleSlot,
         RowLastPossibleSlot,
         RowLastTwoPossibleSlots,
         ColumnLastTwoPossibleSlots,
+        LastInRowOrColumn
     }
 }
