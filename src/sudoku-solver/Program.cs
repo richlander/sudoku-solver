@@ -19,7 +19,6 @@ namespace sudoku_solver
             var solvers = new ISolver[]
             {
                 new NakedSinglesSolver(puzzle),
-                //new NakedSingles2Solver(puzzle),
                 new HiddenSinglesSolver(puzzle)
             };
          
