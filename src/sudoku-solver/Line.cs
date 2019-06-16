@@ -29,7 +29,6 @@ namespace sudoku_solver
             return count;
         }
 
-
         public (bool justOne, int index) IsJustOneElementUnsolved()
         {
             bool justOne = false;

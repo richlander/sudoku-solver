@@ -55,22 +55,20 @@ namespace sudoku_solver
         {
             var line = _puzzle.GetColumn(index);
             (bool solved, int cell, int value) = SolveLine(line);
-            
-            var solution = new Solution
-            {
-                Solved = solved
-            };
 
             if (solved)
             {
-                solution.Column = index;
-                solution.Row = cell;
-                solution.Value = value;
-                solution.Solver = this;
-                return solution;
+                return new Solution
+                {
+                    Solved = true,
+                    Column = index,
+                    Row = cell,
+                    Value = value,
+                    Solver = this
+                };
             }
 
-            return solution;
+            return Solution.False;
         }
 
         public Solution SolveRow(int index)
@@ -78,21 +76,19 @@ namespace sudoku_solver
             var line = _puzzle.GetRow(index);
             (bool solved, int cell, int value) = SolveLine(line);
 
-            var solution = new Solution
-            {
-                Solved = solved
-            };
-
             if (solved)
             {
-                solution.Column = cell;
-                solution.Row = index;
-                solution.Value = value;
-                solution.Solver = this;
-                return solution;
+                return new Solution
+                {
+                    Solved = true,
+                    Column = cell,
+                    Row = index,
+                    Value = value,
+                    Solver = this
+                };
             }
 
-            return solution;
+            return Solution.False;
         }
 
         private (bool solved, int cell, int value) SolveLine(Line line)
@@ -140,11 +136,8 @@ namespace sudoku_solver
         {
             var box = _puzzle.GetBox(index);
 
-            var solution = new Solution
-            {
-                Solved = false
-            };
             var values = new bool[10];
+            var solutionValue = 0;
             var unsolvedCells = 0;
             var unsolvedCell = 99;
             for (int i = 0; i < 9; i++)
@@ -174,31 +167,34 @@ namespace sudoku_solver
                 }
                 if (unsolvedCells > 1)
                 {
-                    return solution;
+                    return Solution.False;
                 }
             }
             
             if (unsolvedCells == 0)
             {
-                return solution;
+                return Solution.False;
             }
             
             for (int i = 1; i < 10; i++)
             {
                 if (!values[i])
                 {
-                    solution.Value = i;
+                    solutionValue = i;
                     break;
                 }
             }
 
             (var row, var column) = Puzzle.GetLocationForBoxCell(index, unsolvedCell);
 
-            solution.Solved = true;
-            solution.Row = row;
-            solution.Column = column;
-            solution.Solver = this;
-            return solution;
+            return new Solution
+            {
+                Solved = true,
+                Row = row,
+                Column = column,
+                Value = solutionValue,
+                Solver = this
+            };
         }
     }
 }
