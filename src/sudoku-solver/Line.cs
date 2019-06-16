@@ -13,6 +13,8 @@ namespace sudoku_solver
 
         public int this[int i] => Segment[i];
 
+        public int Length => Segment.Length;
+
         public int GetUnsolvedCount()
         {
             int count = 0;
@@ -26,6 +28,7 @@ namespace sudoku_solver
             }
             return count;
         }
+
 
         public (bool justOne, int index) IsJustOneElementUnsolved()
         {
@@ -49,6 +52,10 @@ namespace sudoku_solver
             return (justOne, index);
         }
 
+        public ReadOnlySpan<int>.Enumerator GetEnumerator()
+        {
+            return Segment.GetEnumerator();
+        }
         public bool ContainsValue(int value)
         {
             for (int i = 0; i < Segment.Length; i++)

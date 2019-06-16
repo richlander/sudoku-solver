@@ -49,23 +49,28 @@ namespace sudoku_solver
             // using rows and/or columns as input
             for (int i = 0; i < 3; i++)
             {
-                // calculate rows for i
-                var row1Index = i;
-                var row2Index = (i + 1) % 3;
-                var row3Index = (i + 2) % 3;
 
                 // target box
-                var boxRow1 = box.GetRow(row1Index);
+                var boxRow1 = box.GetRow(i);
 
+                // check if row contains a zero
                 if (!boxRow1.ContainsValue(0))
                 {
                     continue;
                 }
 
+                // calculate rows for i
+                var row1Index = i;
+                var row2Index = (i + 1) % 3;
+                var row3Index = (i + 2) % 3;
+
                 var boxRow2 = box.GetRow(row2Index);
                 var boxRow3 = box.GetRow(row3Index);
 
-                // neighboring boxess
+                // get all values in box
+                var boxLine = box.AsLine();
+
+                // neighboring boxes
                 // horizontal adjacent box 1 -- rows
                 var ahnb1Row1 = ahnb1.GetRow(row1Index);
                 var ahnb1Row2 = ahnb1.GetRow(row2Index);
@@ -82,12 +87,7 @@ namespace sudoku_solver
 
                 // get complete row that includes current row of box
                 var currentRowIndex = box.GetRowOffsetForBox() + i;
-                //TODO: consider an overload that only returns non-zero values
                 var currentRow = _puzzle.GetRow(currentRowIndex);
-
-                // get all values in box
-                var boxLine = box.AsLine();
-                //var boxValues = box.AsValues();
 
                 // calculate full set of illegal values for row 1
                 var boxRow1IllegalValues = boxLine.Union(currentRow);
@@ -97,7 +97,6 @@ namespace sudoku_solver
                 var row3Candidates = adjRow3Union.DisjointSet(boxRow1IllegalValues);
                 var boxRow1Candidates = row2Candidates.Intersect(row3Candidates);
 
-                
                 // determine if rows on their own present a solution
                 if (boxRow1Candidates.Length == 1)
                 {
@@ -109,7 +108,7 @@ namespace sudoku_solver
                     }
                 }
 
-                // interate over columns for row
+                // iterate over columns for row
                 // mostly targets row[column] cell
                 for (int y = 0; y < 3; y++)
                 {
@@ -437,6 +436,86 @@ namespace sudoku_solver
                         }
                     }
 
+                    {
+                        var solverKind = "LastInRowOrColumn";
+                        (var valuesFound, var values) = FindMissingValues(currentCol,currentRow);
+
+                        if (valuesFound == 8)
+                        {
+                            for (int v = 1; v < 10;v++)
+                            {
+                                if (!values[v])
+                                {
+                                    return GetSolution(index,i,y,v,solverKind);
+                                }
+                            }
+                        }
+
+                        for (var j = 1; j < 10;j++)
+                        {
+                            if (values[j])
+                            {
+                                continue;
+                            }
+
+                            var columnIndex = box.GetColumnOffsetForBox() + y;
+                            var rowIndex = box.GetRowOffsetForBox() + i;
+                            var foundSolution = 0;
+
+                            // try with columns for the row
+                            for (int l = 0; l < 9;l++)
+                            {
+                                var cell = currentRow[l];
+                                if (cell != 0 || l == columnIndex)
+                                {
+                                    continue;
+                                }
+
+                                if (_puzzle.GetColumn(l).ContainsValue(j))
+                                {
+                                    foundSolution = j;
+                                }
+                                else
+                                {
+                                    foundSolution = 0;
+                                    break;
+                                }
+                            }
+
+                            if (foundSolution !=0)
+                            {
+                                return GetSolution(index,i,y,foundSolution, solverKind);
+                            }
+
+                            // try with rows for the column
+                            for (int l = 0; l < 9;l++)
+                            {
+                                var cell = currentCol[l];
+                                if (cell != 0 || l == columnIndex)
+                                {
+                                    continue;
+                                }
+
+                                if (_puzzle.GetRow(l).ContainsValue(j))
+                                {
+                                    foundSolution = j;
+                                }
+                                else
+                                {
+                                    foundSolution = 0;
+                                    break;
+                                }
+                            }
+
+                            if (foundSolution !=0)
+                            {
+                                return GetSolution(index,i,y,foundSolution, solverKind);
+                            }
+                        }
+
+
+                    }
+
                     bool CheckRowForValue(int searchValue, Box box, int row)
                     {
                         // get complete row that includes current row of box
@@ -479,6 +558,30 @@ namespace sudoku_solver
                             }
                         }
                         return true;
+                    }
+
+                    // assumes lines are of the same length
+                    (int valuesFound, bool[] values) FindMissingValues(Line line1, Line line2)
+                    {
+                        int valuesFound = 0;
+                        bool[] values = new bool[10];
+
+                        for (int i = 0; i < line1.Length; i++)
+                        {
+                            Update(line1[i]);
+                            Update(line2[i]);
+                        }
+
+                        return (valuesFound, values);
+
+                        void Update(int value)
+                        {
+                            if (value != 0 && !values[value])
+                            {
+                                values[value] = true;
+                                valuesFound++;
+                            }
+                        }
                     }
 
                     bool CheckColumnForValue(int searchValue, Box box, int col)

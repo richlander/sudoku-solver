@@ -113,16 +113,6 @@ namespace sudoku_solver
             }
         }
 
-        private static int GetCellOffset(int index)
-        {
-            var offset = (index / 3) * 27 + (index % 3) * 3;
-            if (offset > 80)
-            {
-                Debugger.Break();
-            }
-            return offset;
-        }
-
         public Line GetRow(int index)
         {
             return new Line(_board.Slice(_cellOffset + (9 * index), 3));
@@ -156,6 +146,16 @@ namespace sudoku_solver
         public int GetColumnOffsetForBox()
         {
             return (_index % 3) * 3;
+        }
+
+        private static int GetCellOffset(int index)
+        {
+            var offset = (index / 3) * 27 + (index % 3) * 3;
+            if (offset > 80)
+            {
+                Debugger.Break();
+            }
+            return offset;
         }
     }
 }
