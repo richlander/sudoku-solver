@@ -34,6 +34,8 @@ namespace sudoku_solver
         public Solution Solve(int index)
         {
             var box = _puzzle.GetBox(index);
+            var rowOffset = box.GetRowOffset();
+            var columnOffset = box.GetColumnOffset();
 
             // get adjacent neighboring boxes
             var ahnb1 = box.FirstHorizontalNeighbor;
@@ -86,7 +88,7 @@ namespace sudoku_solver
                 var adjRow3Union = ahnb1Row3.Union(ahnb2Row3);
 
                 // get complete row that includes current row of box
-                var currentRowIndex = box.GetRowOffsetForBox() + i;
+                var currentRowIndex = rowOffset + i;
                 var currentRow = _puzzle.GetRow(currentRowIndex);
 
                 // calculate full set of illegal values for row 1
@@ -138,7 +140,7 @@ namespace sudoku_solver
                     var avnb2Col3 = avnb2.GetColumn(col3Index);
 
                     // get complete column that includes the the first column of box
-                    var currentColIndex = box.GetColumnOffsetForBox() + y;
+                    var currentColIndex = columnOffset + y;
                     var currentCol = _puzzle.GetColumn(currentColIndex);
 
                     // calculate full set of illegal values for col 1
@@ -408,8 +410,8 @@ namespace sudoku_solver
                                 continue;
                             }
 
-                            var columnIndex = box.GetColumnOffsetForBox() + y;
-                            var rowIndex = box.GetRowOffsetForBox() + i;
+                            var columnIndex = box.GetColumnOffset() + y;
+                            var rowIndex = box.GetRowOffset() + i;
                             var foundSolution = 0;
 
                             // try with columns for the row
@@ -469,7 +471,7 @@ namespace sudoku_solver
                     bool CheckRowForValue(int searchValue, Box box, int row)
                     {
                         // get complete row that includes current row of box
-                        var rowIndex = box.GetRowOffsetForBox() + row;
+                        var rowIndex = box.GetRowOffset() + row;
                         //TODO: consider an overload that only returns non-zero values
                         var targetRow = _puzzle.GetRow(rowIndex);
 
@@ -537,7 +539,7 @@ namespace sudoku_solver
                     bool CheckColumnForValue(int searchValue, Box box, int col)
                     {
                         // get complete column that includes current column of box
-                        var colIndex = box.GetColumnOffsetForBox() + col;
+                        var colIndex = box.GetColumnOffset() + col;
                         var targetCol = _puzzle.GetColumn(colIndex);
 
                         return targetCol.Segment.Contains(searchValue);

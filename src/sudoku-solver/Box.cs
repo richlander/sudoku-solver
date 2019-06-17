@@ -133,17 +133,12 @@ namespace sudoku_solver
             };
         }
 
-        public int GetOffsetForBox()
-        {
-            return (_index / 3) * 27 + (_index % 3) * 3;
-        }
-
-        public int GetRowOffsetForBox()
+        public int GetRowOffset()
         {
             return (_index / 3) * 3;
         }
 
-        public int GetColumnOffsetForBox()
+        public int GetColumnOffset()
         {
             return (_index % 3) * 3;
         }
@@ -153,7 +148,7 @@ namespace sudoku_solver
             var offset = (index / 3) * 27 + (index % 3) * 3;
             if (offset > 80)
             {
-                Debugger.Break();
+                throw new Exception();
             }
             return offset;
         }
