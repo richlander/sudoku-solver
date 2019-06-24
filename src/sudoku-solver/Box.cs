@@ -20,6 +20,7 @@ namespace sudoku_solver
             _index = index;
         }
 
+        public Puzzle Puzzle => _puzzle;
         public Line FirstRow => GetRow(0);
         public Line InsideRow => GetRow(1);
         public Line LastRow => GetRow(2);
@@ -31,7 +32,14 @@ namespace sudoku_solver
         public Box FirstVerticalNeighbor => _puzzle.GetBox((_index + 3) % 9);
         public Box SecondVerticalNeighbor => _puzzle.GetBox((_index + 6) % 9);
 
-
+        public int this[int i] => i switch
+        {
+            int v when i < 3 => FirstRow[i],
+            int v when i < 6 => InsideRow[i-3],
+            int v when i < 9 => LastRow[i-6],
+            _ => throw new ArgumentException()
+        };
+    
         public int GetUnsolvedCount()
         {
             return 
@@ -152,5 +160,28 @@ namespace sudoku_solver
             }
             return offset;
         }
+
+        public int GetRowOffsetForCell(int index)
+        {
+            return GetRowOffset() + (index / 3);
+        }
+
+        public int GetColumnOffsetForCell(int index)
+        {
+            return GetColumnOffset() + (index % 3);
+        }
+
+        public Solution GetSolution(int cell, int value, string solverKind)
+        {
+            return new Solution
+            {
+                Solved = true,
+                Value = value,
+                Row = GetRowOffsetForCell(cell),
+                Column = GetColumnOffsetForCell(cell),
+                SolverKind = solverKind
+            };
+        }
+
     }
 }

@@ -122,5 +122,47 @@ namespace sudoku_solver
         {
             return Segment.Union(line.Segment);
         }
+
+        // assumes lines are of the same length
+        public static ReadOnlySpan<int> FindMissingValues(Line line1, Line line2)
+        {
+            bool[] values = new bool[10];
+            int[] missingValues = new int[9];
+            int length = -1;
+
+            for (int i = 0; i < line1.Length; i++)
+            {
+                Update(line1[i]);
+                Update(line2[i]);
+            }
+
+            for (int i = 1; i < 10; i++)
+            {
+                if (!values[i])
+                {
+                    length++;
+                    missingValues[length] = i;
+                }
+            }
+
+            if (length == -1)
+            {
+                length = 0;
+            }
+            else if (length == 0)
+            {
+                length = 1;
+            }
+
+            return missingValues.AsSpan().Slice(0,length);
+
+            void Update(int value)
+            {
+                if (value != 0 && !values[value])
+                {
+                    values[value] = true;
+                }
+            }
+        }
     }
 }
