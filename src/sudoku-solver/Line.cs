@@ -18,10 +18,9 @@ namespace sudoku_solver
         public int GetUnsolvedCount()
         {
             int count = 0;
-
             for (int i = 0; i < Segment.Length; i++)
             {
-                if (Segment[i] == 0)
+                if (Segment[i] == Puzzle.UnsolvedMarker)
                 {
                     count++;
                 }
@@ -29,17 +28,41 @@ namespace sudoku_solver
             return count;
         }
 
-        public (bool justOne, int index) IsJustOneElementUnsolved()
+        public int CountValidSolved()
+        {
+            int count = 0;
+            var values = new bool[10];
+            for (int i = 0; i < Segment.Length; i++)
+            {
+                int value = Segment[i];
+                if (value is >= 1 and <= 9)
+                {
+                    if (values[value])
+                    {
+                        return -1;
+                    }
+                    values[value] = true;
+                    count++;
+                }
+                else if (value != Puzzle.UnsolvedMarker)
+                {
+                    throw new Exception($"Puzzle is invalid. Contains illegal charater: {value}.");
+                }
+            }
+            return count;
+        }
+
+        public bool IsJustOneElementUnsolved(out int index)
         {
             bool justOne = false;
-            int index = 0;
+            index = 0;
             for (int i = 0; i < Segment.Length; i++)
             {
                 if (Segment[i] == Puzzle.UnsolvedMarker)
                 {
                     if (justOne)
                     {
-                        return (false, 0);
+                        return false;
                     }
                     else
                     {
@@ -48,23 +71,7 @@ namespace sudoku_solver
                     }
                 }
             }
-            return (justOne, index);
-        }
-
-        public ReadOnlySpan<int>.Enumerator GetEnumerator()
-        {
-            return Segment.GetEnumerator();
-        }
-        public bool ContainsValue(int value)
-        {
-            for (int i = 0; i < Segment.Length; i++)
-            {
-                if (Segment[i] == value)
-                {
-                    return true;
-                }
-            }
-            return false;
+            return true;
         }
 
         public bool[] GetValues()
@@ -163,6 +170,22 @@ namespace sudoku_solver
                     values[value] = true;
                 }
             }
+        }
+
+        public ReadOnlySpan<int>.Enumerator GetEnumerator()
+        {
+            return Segment.GetEnumerator();
+        }
+        public bool ContainsValue(int value)
+        {
+            for (int i = 0; i < Segment.Length; i++)
+            {
+                if (Segment[i] == value)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

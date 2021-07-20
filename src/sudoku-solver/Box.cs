@@ -34,18 +34,53 @@ namespace sudoku_solver
 
         public int this[int i] => i switch
         {
-            int v when i < 3 => FirstRow[i],
-            int v when i < 6 => InsideRow[i-3],
-            int v when i < 9 => LastRow[i-6],
+            < 3 => FirstRow[i],
+            < 6 => InsideRow[i-3],
+            < 9 => LastRow[i-6],
             _ => throw new ArgumentException()
         };
     
-        public int GetUnsolvedCount()
-        {
-            return 
+        public int GetUnsolvedCount() => 
                 FirstRow.GetUnsolvedCount() +
                 InsideRow.GetUnsolvedCount() +
                 LastRow.GetUnsolvedCount();
+
+        public int CountValidSolved()
+        {
+            var values = new bool[10];
+            if (CountLine(FirstRow, out int firstRowCount) &&
+                CountLine(InsideRow, out int insideRowCount) &&
+                CountLine(LastRow, out int lastRowCount))
+                {
+                    return firstRowCount + insideRowCount + lastRowCount;
+                }
+
+            return -1;
+
+            bool CountLine(Line line, out int count)
+            {
+                count = 0;
+                ReadOnlySpan<int> segment = line.Segment;
+                for (int i = 0; i < segment.Length; i++)
+                {
+                    int value = segment[i];
+                    if (value is >= 1 and <= 9)
+                    {
+                        if (values[value])
+                        {
+                            return false;
+                        }
+                        values[value] = true;
+                        count++;
+                    }
+                    else if (value != Puzzle.UnsolvedMarker)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
         }
 
         public bool[] GetValues()
@@ -53,19 +88,13 @@ namespace sudoku_solver
             var values = new bool[10];
             for(int i = 0; i < 9; i++)
             {
-                int value;
-                if (i < 3)
+                int value = i switch
                 {
-                    value = FirstRow[i];
-                }
-                else if (i <6)
-                {
-                    value = InsideRow[i-3];
-                }
-                else
-                {
-                    value = LastRow[i-6];
-                }
+                    < 3 => FirstRow[i],
+                    < 6 => InsideRow[i-3],
+                    < 9 => LastRow[i-6],
+                    _ => throw new ArgumentException()
+                };
 
                 if (values[value] && value != 0)
                 {
@@ -79,9 +108,8 @@ namespace sudoku_solver
             return values;
         }
 
-        public Line AsLine()
-        {
-            var boxSequence = new int[]
+        public Line AsLine() => new Line(
+            new int[]
             {
                 FirstRow[0],
                 FirstRow[1],
@@ -91,10 +119,7 @@ namespace sudoku_solver
                 InsideRow[2],
                 LastRow[0],
                 LastRow[1],
-                LastRow[2]
-            };
-            return new Line(boxSequence);
-        }
+                LastRow[2]});
 
         public ReadOnlySpan<int> AsValues()
         {
@@ -121,10 +146,7 @@ namespace sudoku_solver
             }
         }
 
-        public Line GetRow(int index)
-        {
-            return new Line(_board.Slice(_cellOffset + (9 * index), 3));
-        }
+        public Line GetRow(int index) => new Line(_board.Slice(_cellOffset + (9 * index), 3));
         
         public Line GetColumn(int index)
         {
@@ -141,15 +163,9 @@ namespace sudoku_solver
             };
         }
 
-        public int GetRowOffset()
-        {
-            return (_index / 3) * 3;
-        }
+        public int GetRowOffset() => (_index / 3) * 3;
 
-        public int GetColumnOffset()
-        {
-            return (_index % 3) * 3;
-        }
+        public int GetColumnOffset() => (_index % 3) * 3;
 
         private static int GetCellOffset(int index)
         {
@@ -161,27 +177,11 @@ namespace sudoku_solver
             return offset;
         }
 
-        public int GetRowOffsetForCell(int index)
-        {
-            return GetRowOffset() + (index / 3);
-        }
+        public int GetRowOffsetForCell(int index) => GetRowOffset() + (index / 3);
 
-        public int GetColumnOffsetForCell(int index)
-        {
-            return GetColumnOffset() + (index % 3);
-        }
+        public int GetColumnOffsetForCell(int index) => GetColumnOffset() + (index % 3);
 
-        public Solution GetSolution(int cell, int value, string solverKind)
-        {
-            return new Solution
-            {
-                Solved = true,
-                Value = value,
-                Row = GetRowOffsetForCell(cell),
-                Column = GetColumnOffsetForCell(cell),
-                SolverKind = solverKind
-            };
-        }
-
+        public (int row, int column) GetLocation(int cell) => 
+            (GetRowOffsetForCell(cell), GetColumnOffsetForCell(cell));
     }
 }

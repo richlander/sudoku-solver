@@ -21,19 +21,20 @@ namespace sudoku_tests
         [Fact]
         public void FindFirstSolution()
         {
-            var puzzle = new Puzzle(_board);
-            var solver = new NakedSinglesSolver(puzzle);
-            var solution = solver.FindSolution().First();
-            Assert.True(solution.Solved, "A solved solution should be returned.");
+            Puzzle puzzle = new(_board);
+            NakedSinglesSolver solver = new(puzzle);
+            bool solved = solver.Solve(out Solution solution);
+            Assert.True(solved, "A solved solution should be returned.");
         }
 
         [Fact]
         public void SolvePuzzle()
         {
-            var puzzle = new Puzzle(_board);
-            var solver = new NakedSinglesSolver(puzzle);
-            var solved = puzzle.Solve(solver);
-            Assert.True(solved && puzzle.ToString() == _completedBoard, "Puzzle should  be solved.");
+            Puzzle puzzle = new(_board);
+            NakedSinglesSolver solver = new(puzzle);
+            SolverSet solverSet = new(new List<ISolver>(){solver});
+            solverSet.Solve();
+            Assert.True(puzzle.IsSolve() && puzzle.ToString() == _completedBoard, "Puzzle should  be solved.");
         }
 
         [Fact]

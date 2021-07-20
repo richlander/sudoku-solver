@@ -4,6 +4,7 @@ namespace sudoku_solver
     {
         public bool Valid;
         public bool Solved;
+        public int SolvedCount;
         public string Description;
     }
 }

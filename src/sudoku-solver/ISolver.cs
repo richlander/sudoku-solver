@@ -4,7 +4,6 @@ namespace sudoku_solver
 {
     public interface ISolver
     {
-        IEnumerable<Solution> FindSolution();
-        bool IsEffective();
+        bool TrySolve(out Solution solution);
     }
 }
