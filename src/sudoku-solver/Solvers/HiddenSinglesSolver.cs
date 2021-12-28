@@ -4,22 +4,35 @@ using System.Linq;
 
 namespace sudoku_solver
 {
-    // Hidden singles: One logically absent valuen in a row or column, based on 
+    // Hidden singles: One logically absent value in a row or column, based on 
     // values being present in an adjacent row or column.
+    // Example:
+    // Solved cell: r3:c1; 8
+    // Solved by: HiddenSinglesSolver:RowSolver
+    //  *
+    //  0 0 2 | 0 3 0 | 0 0 8
+    //  0 0 0 | 0 0 8 | 0 0 0
+    //  8 3 1 | 0 2 0 | 0 0 0*
     public class HiddenSinglesSolver : ISolver
     {
         private Puzzle _puzzle;
+
+        public HiddenSinglesSolver()
+        {
+        }
 
         public HiddenSinglesSolver(Puzzle puzzle)
         {
             _puzzle = puzzle;
         }
 
-        public bool TrySolve(out Solution solution)
+        public bool TrySolve(Puzzle puzzle, out Solution solution)
         {
+            _puzzle = puzzle;
+
             for (int i = 0; i < 9; i++)
             {
-                if (TrySolveInternal(i, out solution))
+                if (TrySolveBox(i, out solution))
                 {
                     return true;
                 }
@@ -29,7 +42,7 @@ namespace sudoku_solver
             return false;
         }
 
-        private bool TrySolveInternal(int index, out Solution solution)
+        public bool TrySolveBox(int index, out Solution solution)
         {
             Box box = _puzzle.GetBox(index);
             int rowOffset = box.GetRowOffset();

@@ -11,17 +11,25 @@ namespace sudoku_tests
         // That page is licensed with the GNU Free Documentation License
         // https://www.gnu.org/copyleft/fdl.html
 
-        // The targeted puzzle is invalid and should be detected as such
-        // Puzzle: 11...............................................................................
+        // This puzzle is invalid.
+        // 11...............................................................................
 
         string _board = "11...............................................................................";
 
         [Fact]
         public void RepeatingValues()
         {
-            var puzzle = new Puzzle(_board);
-            var solved = puzzle.IsSolved();
-            Assert.False(solved, "Puzzle should be rejected.");
+            string message = string.Empty;
+            string expectedMessage = "Puzzle is not valid.";
+            try
+            {
+                var puzzle = new Puzzle(_board);
+            }
+            catch(Exception e)
+            {
+                message = e.Message;
+            }
+            Assert.True(message == expectedMessage, "Puzzle should be rejected.");
         }
     }
 }

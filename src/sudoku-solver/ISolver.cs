@@ -4,6 +4,6 @@ namespace sudoku_solver
 {
     public interface ISolver
     {
-        bool TrySolve(out Solution solution);
+        bool TrySolve(Puzzle puzzle, out Solution solution);
     }
 }

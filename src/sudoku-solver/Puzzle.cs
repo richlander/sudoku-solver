@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Linq;
 
 namespace sudoku_solver
 {
@@ -10,11 +9,11 @@ namespace sudoku_solver
         private Memory<int> _board;
         public static readonly int UnsolvedMarker = 0;
         public const int TotalsCells = 81;
+        public int InitialSolved {get; private set;}
         public int Solved {get; private set;}
-        private int UnSolvedCells => TotalsCells - Solved;
         public int[] SolvedForBox {get; private set;}
-        public int[] SolvedForRow { get; private set; }
-        public int[] SolvedForColumn { get; private set; }
+        public int[] SolvedForRow {get; private set;}
+        public int[] SolvedForColumn {get; private set;}
 
         public Puzzle(string board) : this(ReadPuzzleAsString(board))
         {
@@ -37,6 +36,52 @@ namespace sudoku_solver
         }
 
         public ReadOnlyMemory<int> Board => _board;
+
+        public IEnumerable<ISolver> Solvers {get; set;}
+
+        public void AddSolver(ISolver solver)
+        {
+            Solvers = new List<ISolver>()
+            {
+                solver
+            };
+        }
+
+        // Approach chosen is to collect the first solution from the solvers
+        // then reset to first (assumed to be cheapest/simplest) solver.
+        public bool TrySolve(out Solution solution)
+        {
+            foreach(ISolver solver in Solvers)
+            {
+                if (solver.TrySolve(this, out solution))
+                {
+                    return true;
+                }
+            }
+     
+            solution = null;
+            return false;
+        }
+
+        public bool Solve()
+        {
+            if (TrySolve(out Solution solution))
+            {
+                Update(solution);
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool SolvePuzzle()
+        {
+            while(Solve())
+            {
+            }
+
+            return IsSolved;
+        }
 
         public Line GetRow(int row)
         {
@@ -77,7 +122,7 @@ namespace sudoku_solver
 
         public static int GetBoxIndex(int row, int column) => (row / 3) * 3 + (column % 3);
 
-        public bool IsSolved() => Solved == TotalsCells;
+        public bool IsSolved => Solved == TotalsCells;
 
         public bool IsValid()
         {
@@ -114,6 +159,8 @@ namespace sudoku_solver
                 // Process column i
                 SolvedForColumn[i] = GetColumn(i).CountValidSolved();
             }
+
+            InitialSolved = Solved;
         }
 
         public bool Update(Solution solution)
@@ -145,10 +192,8 @@ namespace sudoku_solver
         public override string ToString()
         {
             var buffer = new StringBuilder();
-            var board = _board.Span;
-            for (int i = 0; i < board.Length; i++)
+            foreach(int num in _board.Span)
             {
-                var num = board[i];
                 char cell = num == 0 ? '.' : (char)('0' + num);
                 buffer.Append(cell);
             }

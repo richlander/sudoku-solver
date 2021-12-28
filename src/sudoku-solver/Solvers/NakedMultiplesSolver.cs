@@ -7,13 +7,14 @@ namespace sudoku_solver
     {
         Puzzle _puzzle;
 
-        public NakedMultiplesSolver(Puzzle puzzle)
+        public NakedMultiplesSolver()
         {
-            _puzzle = puzzle;
         }
 
-        public bool TrySolve(out Solution solution)
+        public bool TrySolve(Puzzle puzzle, out Solution solution)
         {
+            _puzzle = puzzle;
+
             for (int i = 0; i < 9; i++)
             {
                 if (TrySolveBox(i, out solution))
@@ -30,7 +31,7 @@ namespace sudoku_solver
         {
             solution = null;
             Box box = _puzzle.GetBox(index);
-            BoxCandidates boxCandidates = new (box);
+            BoxCandidates boxCandidates = new(box);
 
             var (found, multiples) = boxCandidates.GetMultiples();
 

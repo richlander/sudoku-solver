@@ -20,17 +20,16 @@ namespace sudoku_tests
         public void CheckCompletedPuzzle()
         {
             var puzzle = new Puzzle(_board);
-            var solved = puzzle.IsSolved();
-            Assert.True(solved,"Puzzle should be solved.");
+            Assert.True(puzzle.IsSolved,"Puzzle should be solved.");
         }
 
         [Fact]
         public void AttemptToSolveCompletedPuzzle()
         {
             var puzzle = new Puzzle(_board);
-            var solver = new NakedSinglesSolver(puzzle);
-            var solved = puzzle.Solve(solver);
-            Assert.True(solved, "Puzzle should be solved.");
+            puzzle.AddSolver(new NakedSinglesSolver());
+            Assert.False(puzzle.TrySolve(out Solution solution), "No more solutions should be available.");
+            Assert.True(puzzle.SolvePuzzle(),"Puzzle should be solved.");
         }
     }
 }

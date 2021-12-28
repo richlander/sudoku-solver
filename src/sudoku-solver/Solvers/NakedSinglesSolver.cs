@@ -10,13 +10,19 @@ namespace sudoku_solver
     {
         private Puzzle _puzzle;
         private const int _effectiveCount = 8;
+        public NakedSinglesSolver()
+        {
+        }
+
         public NakedSinglesSolver(Puzzle puzzle)
         {
             _puzzle = puzzle;
         }
 
-        public bool TrySolve(out Solution solution)
+        public bool TrySolve(Puzzle puzzle, out Solution solution)
         {
+            _puzzle = puzzle;
+
             for (int i = 0; i < 9; i++)
             {
                 if (TrySolveBox(i, out solution) ||

@@ -17,25 +17,31 @@ List<string> tests = new()
     "7.5.2...1...5..3...31..9.82.5...6...69.....75...2...3.51.8..49...3..1...8...3.1.6",
     "6...1.5.2...639....8........3....7..8..2.1..4..1....9........5....387...4.8.9...6",
     "3...8...1.6..2..9...5.9.7.....479.......1.....296.548..3.....6..5.....1..1426357.",
+    "..7.3..96..41...5.3....5.......789........1......6.3.46.2..4.....1..7...5.....8..",
+    "..2.3...8.....8....31.2.....6..5.27..1.....5.2.4.6..31....8.6.5.......13..531.4.."
 };
 
-Puzzle puzzle = new(tests[tests.Count -1]);
+string board;
 
-List<ISolver> solvers = new()
+if (args.Length == 1 && args[0].Length == 81)
 {
-    new NakedSinglesSolver(puzzle),
-    new HiddenSinglesSolver(puzzle),
-    new NakedMultiplesSolver(puzzle)
-};
-
-SolverSet solver = new(solvers);
-
-if (puzzle.IsSolved())
+    board = args[0];
+}
+else
 {
-    WriteLine("Puzzle is solved!");
+    board = tests[tests.Count -1];
 }
 
-while (solver.TrySolve(out Solution solution))
+Puzzle puzzle = new(board);
+
+puzzle.Solvers = new List<ISolver>()
+{
+    new NakedSinglesSolver(),
+    new HiddenSinglesSolver(),
+    new NakedMultiplesSolver()
+};
+
+while (puzzle.TrySolve(out Solution solution))
 {
     if (!puzzle.Update(solution))
     {
@@ -48,16 +54,13 @@ while (solver.TrySolve(out Solution solution))
     
     puzzle.DrawPuzzle(solution);
     WriteLine();
-
-    if (puzzle.IsSolved())
-    {
-        WriteLine("Puzzle is solved!");
-        break;
-    }
 }
 
-WriteLine($"Solved cells: {puzzle.Solved}; Remaining: {81 - puzzle.Solved}");
-WriteLine(puzzle);
+if (puzzle.IsSolved)
+{
+    WriteLine("Puzzle is solved!");
+}
 
-WriteLine($"{solver.SolutionCount} solutions found.");
-//WriteLine($"{iterations} solutions attempted.");
+
+WriteLine($"Solved cells: {puzzle.Solved}; Found: {puzzle.Solved - puzzle.InitialSolved}; Remaining: {81 - puzzle.Solved}");
+WriteLine(puzzle);
