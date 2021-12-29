@@ -1,10 +1,9 @@
-namespace sudoku_solver
+namespace sudoku_solver;
+
+public enum SequenceType
 {
-    public enum SequenceType
-    {
-        Unknown,
-        Box,
-        Row,
-        Column
-    }
+    Unknown,
+    Box,
+    Row,
+    Column
 }

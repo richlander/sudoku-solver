@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 
-namespace sudoku_solver
+namespace sudoku_solver;
+
+public interface ISolver
 {
-    public interface ISolver
-    {
-        bool TrySolve(Puzzle puzzle, out Solution solution);
-    }
+    bool TrySolve(Puzzle puzzle, out Solution solution);
 }

@@ -1,14 +1,13 @@
 using System;
 using System.Reflection;
 
-namespace sudoku_solver
+namespace sudoku_solver;
+
+// SolverStrategyAttribute is modelled after CompilerTraitAttribute
+// https://github.com/dotnet/roslyn/blob/master/src/Test/Utilities/Portable/CompilerTraitAttribute.cs
+public class SolverStrategyAttribute : Attribute
 {
-    // SolverStrategyAttribute is modelled after CompilerTraitAttribute
-    // https://github.com/dotnet/roslyn/blob/master/src/Test/Utilities/Portable/CompilerTraitAttribute.cs
-    public class SolverStrategyAttribute : Attribute
+    public SolverStrategyAttribute(Strategy strategy)
     {
-        public SolverStrategyAttribute(Strategy strategy)
-        {
-        }
     }
 }
