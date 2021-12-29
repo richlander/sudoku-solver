@@ -128,9 +128,6 @@ namespace sudoku_solver
         {
             for (int i = 0; i < 9; i++)
             {
-                // Process box i
-                // Process row i
-                // Process column i
                 if (GetBox(i).CountValidSolved() == -1 ||
                     GetRow(i).CountValidSolved() == -1 ||
                     GetColumn(i).CountValidSolved() == -1)

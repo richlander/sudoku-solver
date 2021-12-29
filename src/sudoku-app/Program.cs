@@ -29,7 +29,7 @@ if (args.Length == 1 && args[0].Length == 81)
 }
 else
 {
-    board = tests[tests.Count -1];
+    board = tests[6];
 }
 
 Puzzle puzzle = new(board);

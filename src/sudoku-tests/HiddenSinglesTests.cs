@@ -164,7 +164,6 @@ namespace sudoku_tests
             var board = "..2.3.1.8...1.83..831.2.5..36..51274.1.243.56254.6..311.3.8.6.5......713..531.4..";
             var expectedValue = 8;
             var puzzle = new Puzzle(board);
-            Console.WriteLine(puzzle);
             var solver = new HiddenSinglesSolver(puzzle);
             Assert.True(solver.TrySolveBox(8, out Solution solution) && solution.Value == expectedValue, "Box should be solved.");
         }

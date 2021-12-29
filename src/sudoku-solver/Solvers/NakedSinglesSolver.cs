@@ -6,6 +6,23 @@ namespace sudoku_solver
     // Naked singles: One absent value in a unit (row, column, box) of 9
     // Solves a row like this: 023456789
     // Expected solution is: 1
+
+    // Example:
+    // Solved cell: r4:c3; 2
+    // Solved by: NakedSinglesSolver
+    //     *
+    // 3 0 5 | 4 2 0 | 8 1 0
+    // 4 8 7 | 9 0 1 | 5 0 6
+    // 0 2 9 | 0 5 6 | 3 7 4
+    // ------+-------+------
+    // 8 5 2 | 7 9 3 | 0 4 1*
+    // 6 1 3 | 2 0 8 | 9 5 7
+    // 0 7 4 | 0 6 5 | 2 8 0
+    // ------+-------+------
+    // 2 4 1 | 3 0 9 | 0 6 5
+    // 5 0 8 | 6 7 0 | 1 9 2
+    // 0 9 6 | 5 1 2 | 4 0 8
+
     public class NakedSinglesSolver : ISolver
     {
         private Puzzle _puzzle;
