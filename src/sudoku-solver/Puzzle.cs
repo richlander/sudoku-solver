@@ -1,5 +1,4 @@
-using System;
-using System.Collections.Generic;
+global using ROSi = System.ReadOnlySpan<int>;
 using System.Text;
 
 namespace sudoku_solver;
@@ -12,10 +11,11 @@ namespace sudoku_solver;
 // - Candidates -- solvers primarily remove candidates.
 // - Solution -- a new found solution.
 // - ISolver -- the interface that solvers must implement.
-public class Puzzle
+public partial class Puzzle
 {
-    private Memory<int> _board;
     public static readonly int UnsolvedMarker = 0;
+    private int[] _board;
+    private Candidates _candidates;
     public const int TotalsCells = 81;
     public int InitialSolved {get; private set;}
     public int Solved {get; private set;}
@@ -26,8 +26,7 @@ public class Puzzle
     public Puzzle(string board) : this(ReadPuzzleAsString(board))
     {
     }
-
-    public Puzzle(Memory<int> board)
+    public Puzzle(int[] board)
     {
         if (board.Length != TotalsCells)
         {
@@ -41,10 +40,13 @@ public class Puzzle
         }
 
         UpdateCounts();
+        _candidates = new Candidates(this);
     }
 
-    public ReadOnlyMemory<int> Board => _board;
+    public int this[int i] => _board[i];
 
+    public ReadOnlySpan<int> Board => _board.AsSpan();
+    public Candidates Candidates => _candidates;
     public IEnumerable<ISolver> Solvers {get; set;}
 
     public void AddSolver(ISolver solver)
@@ -91,45 +93,6 @@ public class Puzzle
         return IsSolved;
     }
 
-    public Line GetRow(int row)
-    {
-        var start = GetOffsetForRow(row);
-        return new Line(_board.Slice(start, 9).Span);
-    }
-
-    public Line GetColumn(int column)
-    {
-        var col = new int[9];
-        for (int i = 0;  i < 9; i++)
-        {
-            var cell = column + (i * 9);
-            col[i] = _board.Span[cell];
-        }
-        
-        return new Line(col);
-    }
-
-    public Box GetBox(int index) => new Box(this, index);
-
-    public Line GetBoxAsLine(int index)
-    {
-        var box = GetBox(index);
-        return new Line(new int[]
-        {
-            box.FirstRow[0],
-            box.FirstRow[1],
-            box.FirstRow[2],
-            box.InsideRow[0],
-            box.InsideRow[1],
-            box.InsideRow[2],
-            box.LastRow[0],
-            box.LastRow[1],
-            box.LastRow[2]
-        });
-    }
-
-    public static int GetBoxIndex(int row, int column) => (row / 3) * 3 + (column % 3);
-
     public bool IsSolved => Solved == TotalsCells;
 
     public bool IsValid()
@@ -173,14 +136,13 @@ public class Puzzle
         int row = solution.Row;
         int column = solution.Column;
         int value = solution.Value;
-        var puzzle = _board.Span;
         var index = row * 9 + column;
-        if (puzzle[index] != 0)
+        if (_board[index] != 0)
         {
             throw new Exception("Something went wrong! Oops.");    
         }
 
-        puzzle[index] = value;
+        _board[index] = value;
         Solved++;
         SolvedForRow[row]++;
         SolvedForColumn[column]++;
@@ -192,41 +154,16 @@ public class Puzzle
             GetRow(row).CountValidSolved() != -1;
     }
 
-    public static int GetOffsetForBox(int index) => (index / 3) * 27 + (index % 3) * 3;
-
     public override string ToString()
     {
         var buffer = new StringBuilder();
-        foreach(int num in _board.Span)
+        foreach(int num in _board)
         {
             char cell = num == 0 ? '.' : (char)('0' + num);
             buffer.Append(cell);
         }
         return buffer.ToString();
     }
-
-    public static (int row, int column) GetLocationForBoxCell(int box, int index)
-    {
-        var boxStart = Puzzle.GetOffsetForBox(box);
-        var boxCell = boxStart + index / 3 * 9 + index % 3;
-
-        var row = boxCell / 9;
-        var column = boxCell % 9;
-        return (row,column);
-    }
-
-    private static int[] GetOffsetForColumn(int index)
-    {
-        var column = new int[9];
-        for (int i = 0; i < 9; i++)
-        {
-            var cIndex = index + (i * 9);
-            column[i] = cIndex;
-        }
-        return column;
-    }
-
-    private static int GetOffsetForRow(int index) => index * 9;
 
     private static int[] ReadPuzzleAsString(string board)
     {

@@ -2,10 +2,10 @@ using System;
 using System.Diagnostics;
 
 namespace sudoku_solver;
+
 public ref struct Box
 {
     private Puzzle _puzzle;
-    private ReadOnlySpan<int> _board;
     private int _cellOffset;
     private int _rowOffset;
     private int _index;
@@ -13,7 +13,6 @@ public ref struct Box
     public Box(Puzzle puzzle, int index)
     {
         _puzzle = puzzle;
-        _board = puzzle.Board.Span;
         _cellOffset = GetCellOffset(index);
         _rowOffset = (index / 3) * 3;
         _index = index;
@@ -145,7 +144,7 @@ public ref struct Box
         }
     }
 
-    public Line GetRow(int index) => new Line(_board.Slice(_cellOffset + (9 * index), 3));
+    public Line GetRow(int index) => new Line(_puzzle.Board.Slice(_cellOffset + (9 * index), 3));
     
     public Line GetColumn(int index)
     {
@@ -155,9 +154,9 @@ public ref struct Box
         {
             Segment = new int[] 
             {
-                _board[offset],
-                _board[offset + 9],
-                _board[offset + 18]
+                _puzzle[offset],
+                _puzzle[offset + 9],
+                _puzzle[offset + 18]
             }
         };
     }
@@ -175,6 +174,8 @@ public ref struct Box
         }
         return offset;
     }
+
+    public static int GetFirstCellForBox(int index) => GetCellOffset(index);
 
     public int GetRowOffsetForCell(int index) => GetRowOffset() + (index / 3);
 
