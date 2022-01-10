@@ -1,4 +1,4 @@
-using System;
+using sudoku_solver_extensions;
 
 namespace sudoku_solver;
 
@@ -6,10 +6,7 @@ public ref struct Line
 {
     public ReadOnlySpan<int> Segment;
 
-    public Line(ReadOnlySpan<int> segment)
-    {
-        Segment = segment;
-    }
+    public Line(ReadOnlySpan<int> segment) => Segment = segment;
 
     public int this[int i] => Segment[i];
 
@@ -115,20 +112,13 @@ public ref struct Line
         return indices.AsSpan().Slice(0,Math.Max(0, index));
     }
 
-    public ReadOnlySpan<int> Intersect(Line line)
-    {
-        return Segment.Intersect(line.Segment);
-    }
+    public ReadOnlySpan<int> Except(Line line) => Segment.Except(line.Segment);
 
-    public ReadOnlySpan<int> DisjointSet(Line line)
-    {
-        return Segment.DisjointSet(line.Segment);
-    }
+    public ReadOnlySpan<int> Intersect(Line line) => Segment.Intersect(line.Segment);
 
-    public ReadOnlySpan<int> Union(Line line)
-    {
-        return Segment.Union(line.Segment);
-    }
+    public ReadOnlySpan<int> DisjointSet(Line line) => Segment.DisjointSet(line.Segment);
+
+    public ReadOnlySpan<int> Union(Line line) => Segment.Union(line.Segment);
 
     // assumes lines are of the same length
     public static ReadOnlySpan<int> FindMissingValues(Line line1, Line line2)
@@ -172,10 +162,8 @@ public ref struct Line
         }
     }
 
-    public ReadOnlySpan<int>.Enumerator GetEnumerator()
-    {
-        return Segment.GetEnumerator();
-    }
+    public ReadOnlySpan<int>.Enumerator GetEnumerator() => Segment.GetEnumerator();
+
     public bool ContainsValue(int value)
     {
         for (int i = 0; i < Segment.Length; i++)

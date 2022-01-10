@@ -33,7 +33,7 @@ public class NakedSinglesSolver : ISolver
         _puzzle = puzzle;
     }
 
-    public bool TrySolve(Puzzle puzzle, out Solution solution)
+    public bool TrySolve(Puzzle puzzle, out Solution? solution)
     {
         _puzzle = puzzle;
 
@@ -51,7 +51,7 @@ public class NakedSinglesSolver : ISolver
         return false;
     }
 
-    public bool TrySolveColumn(int index, out Solution solution)
+    public bool TrySolveColumn(int index, out Solution? solution)
     {
         if (_puzzle.SolvedForColumn[index] == _effectiveCount &&
             TrySolveLine(_puzzle.GetColumn(index), out int row, out int value))
@@ -69,7 +69,7 @@ public class NakedSinglesSolver : ISolver
         return false;
     }
 
-    public bool TrySolveRow(int index, out Solution solution)
+    public bool TrySolveRow(int index, out Solution? solution)
     {
         if (_puzzle.SolvedForRow[index] == _effectiveCount &&
             TrySolveLine(_puzzle.GetRow(index), out int column, out int value))
@@ -88,7 +88,7 @@ public class NakedSinglesSolver : ISolver
         return false;
     }
 
-    public bool TrySolveBox(int index, out Solution solution)
+    public bool TrySolveBox(int index, out Solution? solution)
     {
         if (_puzzle.SolvedForBox[index] == _effectiveCount &&
             TrySolveLine(_puzzle.GetBoxAsLine(index), out int lineIndex, out int value))

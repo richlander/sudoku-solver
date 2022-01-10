@@ -11,7 +11,7 @@ public partial class Puzzle
 
    public static (int row, int column) GetLocationForBoxCell(int box, int index)
     {
-        var boxStart = Puzzle.GetFirstCellIndexForBox(box);
+        var boxStart = GetFirstCellIndexForBox(box);
         var boxCell = boxStart + index / 3 * 9 + index % 3;
 
         var row = boxCell / 9;

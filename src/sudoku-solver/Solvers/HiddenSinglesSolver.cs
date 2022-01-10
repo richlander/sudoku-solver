@@ -1,3 +1,4 @@
+using sudoku_solver_extensions;
 namespace sudoku_solver;
 
 // Hidden singles: One logically absent value in a row or column, based on 
@@ -22,7 +23,7 @@ public class HiddenSinglesSolver : ISolver
         _puzzle = puzzle;
     }
 
-    public bool TrySolve(Puzzle puzzle, out Solution solution)
+    public bool TrySolve(Puzzle puzzle, out Solution? solution)
     {
         _puzzle = puzzle;
 

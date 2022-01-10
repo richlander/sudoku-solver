@@ -1,3 +1,4 @@
+using sudoku_solver_extensions;
 namespace sudoku_solver;
 
 // Naked multiples: cells with matching candidates in a unit (like two cells in a box with only 5 and 9 and candidates)
@@ -23,13 +24,18 @@ public class NakedMultiplesSolver : ISolver
     Puzzle _puzzle;
     Candidates _candidates;
 
-    public bool TrySolve(Puzzle puzzle, out Solution solution)
+    public bool TrySolve(Puzzle puzzle, out Solution? solution)
     {
         _puzzle = puzzle;
         _candidates = puzzle.Candidates;
-        _candidates.Update();
         int[] positions;
-        int[] multiples;
+        int[]? multiples;
+
+        if (_candidates is null)
+        {
+            solution = null;
+            return false;
+        }
 
         for (int i = 0; i < 9; i++)
         {
@@ -37,10 +43,6 @@ public class NakedMultiplesSolver : ISolver
                 TrySolveRow(i, out multiples, out positions) ||
                 TrySolveColumn(i, out multiples, out positions))
             {
-                if (positions is null | positions.Length == 0)
-                {
-
-                }
                 foreach (int position in positions)
                 {
                     if (_puzzle[position] != 0)
@@ -58,7 +60,7 @@ public class NakedMultiplesSolver : ISolver
                             Puzzle.GetColumnIndexForCell(position),
                             remainder[0],
                             nameof(NakedMultiplesSolver),
-                            null
+                            string.Empty
                         );
                         return true;
                     }
@@ -70,30 +72,31 @@ public class NakedMultiplesSolver : ISolver
         return false;
     }
 
-    private bool TrySolveBox(int index, out int[] multiples, out int[] positions)
+    private bool TrySolveBox(int index, out int[]? multiples, out int[] positions)
     {
         positions = Puzzle.GetPositionsForBox(index);
         return GetMultiplesForUnit(positions, out multiples);
     }
 
-    private bool TrySolveRow(int index, out int[] multiples, out int[] positions)
+    private bool TrySolveRow(int index, out int[]? multiples, out int[] positions)
     {
         positions = Puzzle.GetPositionsForRow(index);
         return GetMultiplesForUnit(positions, out multiples);
     }
 
-    private bool TrySolveColumn(int index, out int[] multiples, out int[] positions)
+    private bool TrySolveColumn(int index, out int[]? multiples, out int[] positions)
     {
         positions = Puzzle.GetPositionsForColumn(index);
         return GetMultiplesForUnit(positions, out multiples);
     }
 
-    private bool GetMultiplesForUnit(int[] positions, out int[] multiples)
+    private bool GetMultiplesForUnit(int[] positions, out int[]? multiples)
     {
         var pairs = new int[18];
         var triples = new int[27];
         var pairIndex = 0;
         var triplesIndex = 0;
+        multiples = null;
 
         foreach(int position in positions)
         {
@@ -135,7 +138,6 @@ public class NakedMultiplesSolver : ISolver
             index+=2;
         }
 
-        multiples = Array.Empty<int>();
         return false;
     }
 }

@@ -5,15 +5,37 @@ namespace sudoku_solver;
 // Primary data structure is 
 public class Candidates
 {
-    private Puzzle _puzzle;
-    private int[][] _candidates = new int[81][];
+    private Dictionary<int, int[]> _candidates = new Dictionary<int, int[]>();
 
-    public Candidates(Puzzle puzzle)
+    public Candidates(Dictionary<int, int[]> candidates)
     {
-        _puzzle = puzzle;
+        _candidates = candidates;
+    }
+
+    public Candidates()
+    {
+        _candidates = new Dictionary<int, int[]>();
     }
 
     public ReadOnlySpan<int> this[int i] => _candidates[i].AsSpan(1,_candidates[i][0]);
+
+    public bool Contains(int index) => _candidates.ContainsKey(index);
+
+    public void AddCandidates(int index, ReadOnlySpan<int> values)
+    {
+        if (_candidates.ContainsKey(index))
+        {
+            throw new Exception("Something wrong happened.");
+        }
+
+        int[] candidates = new int[values.Length + 1];
+        _candidates[index] = candidates;
+        candidates[0] = values.Length;
+        for(int i = 0; i < values.Length; i++)
+        {
+            candidates[i + 1] = values[i];
+        }
+    }
 
     public void RemoveCandidates(int index, int value)
     {
@@ -41,66 +63,5 @@ public class Candidates
         {
             candidates[0] = candidates[0] - 1;
         }
-    }
-
-    public void Update()
-    {
-        for (int i = 0; i < 81; i++)
-        {
-            if (_puzzle[i] != 0)
-            {
-                continue;
-            }
-
-            _candidates[i] = GetCandidates(i);
-        }
-    }
-
-    private int[] GetCandidates(int index)
-    {
-        // get row that includes cell
-        var rowIndex = Puzzle.GetRowIndexForCell(index);
-        var row = _puzzle.GetRow(rowIndex);
-
-        // get column that includes cell
-        var columnIndex = Puzzle.GetColumnIndexForCell(index);
-        var column = _puzzle.GetColumn(columnIndex);
-
-        // get box that includes cell
-        var boxIndex = Puzzle.GetBoxIndexForCell(index);
-        var box = _puzzle.GetBox(boxIndex).AsLine();
-
-        bool[] values = new bool[10];
-        int[] missingValues = new int[10];
-
-        if (index == 18)
-        {
-
-        }
-
-        for (int i = 0; i < 9; i++)
-        {
-            values[row[i]] = true;
-            values[column[i]] = true;
-            values[box[i]] = true;
-        }
-
-        int count = 0;
-        for (int i = 1; i < 10; i++)
-        {
-            if (!values[i])
-            {
-                count++;
-                missingValues[count] = i;
-            }
-        }
-
-        if (count == 0)
-        {  
-            throw new Exception();
-        }
-
-        missingValues[0] = count;
-        return missingValues;
     }
 }

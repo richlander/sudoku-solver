@@ -1,4 +1,4 @@
-using System;
+namespace sudoku_solver_extensions;
 
 public static class ReadOnlySpanExtensions
 {
@@ -73,6 +73,37 @@ public static class ReadOnlySpanExtensions
             }
         }
 
+        return values[0..count];
+    }
+
+    public static ReadOnlySpan<int> Except(this ReadOnlySpan<int> first, int second)
+    {
+        HashSet<int> set = new(1);
+        set.Add(second);
+        return first.Except(set);
+    }
+
+    public static ReadOnlySpan<int> Except(this ReadOnlySpan<int> first, ReadOnlySpan<int> second)
+    {
+        HashSet<int> set = new(second.Length);
+        foreach(int value in second)
+        {
+            set.Add(value);
+        }
+        return first.Except(set);
+    }
+
+    public static ReadOnlySpan<int> Except(this ReadOnlySpan<int> first, HashSet<int> second)
+    {
+        int[] values = new int[9];
+        int count = 0;
+        foreach (int value in first)
+        {
+            if (second.Add(value))
+            {
+                values[count++] = value;
+            }
+        }
         return values[0..count];
     }
 

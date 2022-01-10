@@ -6,29 +6,29 @@ namespace sudoku_solver;
 public ref struct Box
 {
     private Puzzle _puzzle;
-    private int _cellOffset;
-    private int _rowOffset;
+    private int _firstCellIndex;
+    private int _firstRowIndex;
     private int _index;
 
     public Box(Puzzle puzzle, int index)
     {
         _puzzle = puzzle;
-        _cellOffset = GetCellOffset(index);
-        _rowOffset = (index / 3) * 3;
+        _firstCellIndex = (index / 3) * 27 + (index % 3) * 3;
+        _firstRowIndex = (index / 3) * 3;
         _index = index;
     }
 
     public Puzzle Puzzle => _puzzle;
-    public Line FirstRow => GetRow(0);
-    public Line InsideRow => GetRow(1);
-    public Line LastRow => GetRow(2);
-    public Line FirstColumn => GetColumn(0);
-    public Line InsideColumn => GetColumn(1);
-    public Line LastColumn => GetColumn(2);
-    public Box FirstHorizontalNeighbor => _puzzle.GetBox((_index + 1) % 3 + _rowOffset);
-    public Box SecondHorizontalNeighbor => _puzzle.GetBox((_index + 2) % 3 + _rowOffset);
-    public Box FirstVerticalNeighbor => _puzzle.GetBox((_index + 3) % 9);
-    public Box SecondVerticalNeighbor => _puzzle.GetBox((_index + 6) % 9);
+    public Line FirstRow => GetRowLine(0);
+    public Line InsideRow => GetRowLine(1);
+    public Line LastRow => GetRowLine(2);
+    public Line FirstColumn => GetColumnLine(0);
+    public Line InsideColumn => GetColumnLine(1);
+    public Line LastColumn => GetColumnLine(2);
+    public Box FirstHorizontalNeighbor => _puzzle.GetBox(GetBoxIndexForHorizontalNeighbor(1));
+    public Box SecondHorizontalNeighbor => _puzzle.GetBox(GetBoxIndexForHorizontalNeighbor(2));
+    public Box FirstVerticalNeighbor => _puzzle.GetBox(GetBoxIndexForVerticalNeighbor(1));
+    public Box SecondVerticalNeighbor => _puzzle.GetBox(GetBoxIndexForVerticalNeighbor(2));
 
     public int this[int i] => i switch
     {
@@ -144,11 +144,17 @@ public ref struct Box
         }
     }
 
-    public Line GetRow(int index) => new Line(_puzzle.Board.Slice(_cellOffset + (9 * index), 3));
+    // Rows
+    public static int FirstRowIndex(int index) => (index / 3) * 3;
+
+    public Line GetRowLine(int index) => new Line(GetRow(index));
     
-    public Line GetColumn(int index)
+    public ReadOnlySpan<int> GetRow(int index) => _puzzle.Board.Slice(_firstCellIndex + (9 * index), 3);
+
+    // Columns
+    public Line GetColumnLine(int index)
     {
-        var offset = _cellOffset + index;
+        var offset = _firstCellIndex + index;
 
         return new Line
         {
@@ -161,26 +167,31 @@ public ref struct Box
         };
     }
 
-    public int GetRowOffset() => (_index / 3) * 3;
+    public int FirstColumnIndex() => (_index % 3) * 3;
 
-    public int GetColumnOffset() => (_index % 3) * 3;
+    // Cells
+    public int GetRowIndexForCell(int index) => _firstRowIndex + (index / 3);
 
-    private static int GetCellOffset(int index)
+    public int GetColumnIndexForCell(int index) => FirstColumnIndex() + (index % 3);
+
+    // Neighbors
+    // H: (_index + 1) % 3 + _firstRowIndex
+    // H: (_index + 2) % 3 + _firstRowIndex
+    // V: (_index + 3) % 9
+    // V: (_index + 6) % 9
+
+    public int GetBoxIndexForHorizontalNeighbor(int index) => (_index + index) % 3 + _firstRowIndex;
+    public int GetBoxIndexForVerticalNeighbor(int index) => (_index + index * 3) % 9;
+
+    public IEnumerable<int> GetNeighbors()
     {
-        var offset = (index / 3) * 27 + (index % 3) * 3;
-        if (offset > 80)
-        {
-            throw new Exception();
-        }
-        return offset;
+        yield return GetBoxIndexForHorizontalNeighbor(1);
+        yield return GetBoxIndexForHorizontalNeighbor(2);
+        yield return GetBoxIndexForVerticalNeighbor(1);
+        yield return GetBoxIndexForVerticalNeighbor(2);
     }
 
-    public static int GetFirstCellForBox(int index) => GetCellOffset(index);
-
-    public int GetRowOffsetForCell(int index) => GetRowOffset() + (index / 3);
-
-    public int GetColumnOffsetForCell(int index) => GetColumnOffset() + (index % 3);
-
+    // Other
     public (int row, int column) GetLocation(int cell) => 
-        (GetRowOffsetForCell(cell), GetColumnOffsetForCell(cell));
+        (GetRowIndexForCell(cell), GetColumnIndexForCell(cell));
 }

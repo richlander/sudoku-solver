@@ -1,4 +1,5 @@
 global using ROSi = System.ReadOnlySpan<int>;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace sudoku_solver;
@@ -15,7 +16,7 @@ public partial class Puzzle
 {
     public static readonly int UnsolvedMarker = 0;
     private int[] _board;
-    private Candidates _candidates;
+    private Candidates? _candidates;
     public const int TotalsCells = 81;
     public int InitialSolved {get; private set;}
     public int Solved {get; private set;}
@@ -40,14 +41,24 @@ public partial class Puzzle
         }
 
         UpdateCounts();
-        _candidates = new Candidates(this);
     }
 
     public int this[int i] => _board[i];
 
     public ReadOnlySpan<int> Board => _board.AsSpan();
-    public Candidates Candidates => _candidates;
+    public Candidates Candidates => _candidates ?? UpdateCandidates();
     public IEnumerable<ISolver> Solvers {get; set;}
+
+    public IEnumerable<ICandidateSolver> CandidateSolvers {get; set;}
+
+    [MemberNotNull(nameof(_candidates))]
+    public Candidates? UpdateCandidates()
+    {
+        BasicCandidatesSolver solver = new();
+        solver.TryRemoveCandidates(this, out Candidates? candidates);
+        _candidates = candidates ?? throw new Exception();
+        return candidates;
+    }
 
     public void AddSolver(ISolver solver)
     {
@@ -59,7 +70,7 @@ public partial class Puzzle
 
     // Approach chosen is to collect the first solution from the solvers
     // then reset to first (assumed to be cheapest/simplest) solver.
-    public bool TrySolve(out Solution solution)
+    public bool TrySolve(out Solution? solution)
     {
         foreach(ISolver solver in Solvers)
         {
@@ -75,7 +86,7 @@ public partial class Puzzle
 
     public bool Solve()
     {
-        if (TrySolve(out Solution solution))
+        if (TrySolve(out Solution? solution) && solution is not null)
         {
             Update(solution);
             return true;
