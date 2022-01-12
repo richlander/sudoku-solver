@@ -16,13 +16,15 @@ public class PointingMultiplesCandidateSolver : ICandidateSolver
 
         ReadOnlySpan<int> boxPositions = Puzzle.GetPositionsForBox(index);
 
-        Box box = puzzle.GetBox(index);
         ReadOnlySpan<int> pointingCandidates;
-        int[] neighbors = box.GetNeighbors().ToArray();
+        int[] horizontalNeighbors = Puzzle.GetBoxIndexesForHorizontalNeighbors(index);
+        int[] verticalNeighbors = Puzzle.GetBoxIndexesForVerticalNeighbors(index);
         ReadOnlySpan<int> allRows = new int[] {0, 1, 2};
-        // iterate over all three rows in the box
+
+        // iterate over all three rows in the box, looking for candidates
         for (int i = 0; i < 3; i++)
         {
+            // 
             HashSet<int> otherRowSet = new(6 * 9);
             // for each row, iterate over the other two rows
             // they establish the baseline data with their candidates
@@ -57,7 +59,7 @@ public class PointingMultiplesCandidateSolver : ICandidateSolver
                 }
 
                 // values match with in neighboring rows
-                foreach(int neighbor in neighbors)
+                foreach(int neighbor in horizontalNeighbors)
                 {
                     ReadOnlySpan<int> neighborBoxPositions = Puzzle.GetPositionsForBox(neighbor);
 

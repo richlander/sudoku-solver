@@ -35,6 +35,33 @@ public partial class Puzzle
         return positions; 
     }
 
+    public static int GetFirstRowIndexForBox(int index) => (index / 3) * 3;
+
+    public static int GetFirstColumnIndexForBox(int index) => (index % 3) * 3;
+
+    public static int[] GetBoxIndexesForHorizontalNeighbors(int index)
+    {
+        int firstRowIndex = GetFirstRowIndexForBox(index);
+        int[] neighbors = new int[2];
+
+        for (int i = 1; i < 3; i++)
+        {
+            neighbors[i - 1] = (index + i) % 3 + firstRowIndex;
+        }
+        return neighbors;
+    }
+
+    public static int[] GetBoxIndexesForVerticalNeighbors(int index)
+    {
+        int[] neighbors = new int[2];
+
+        for (int i = 1; i < 3; i++)
+        {
+            neighbors[i - 1] = (index + i * 3) % 9;
+        }
+        return neighbors;
+    }
+
     // Row positions
     public static int GetRowIndexForCell(int index) => index / 9;
     public static int GetFirstCellIndexForRow(int index) => index * 9;
