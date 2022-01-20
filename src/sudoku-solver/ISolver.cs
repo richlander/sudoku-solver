@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-
 namespace sudoku_solver;
 
 public interface ISolver

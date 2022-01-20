@@ -42,8 +42,8 @@ public class HiddenSinglesSolver : ISolver
     public bool TrySolveBox(int index, out Solution solution)
     {
         Box box = _puzzle.GetBox(index);
-        int rowOffset = box.GetRowOffset();
-        int columnOffset = box.GetColumnOffset();
+        int rowOffset = box.FirstRowIndex;
+        int columnOffset = box.FirstColumnIndex;
 
         // get adjacent neighboring boxes
         Box ahnb1 = box.FirstHorizontalNeighbor;
@@ -61,7 +61,7 @@ public class HiddenSinglesSolver : ISolver
         {
 
             // target box
-            Line boxRow1 = box.GetRow(i);
+            Line boxRow1 = box.GetRowLine(i);
 
             // check if row contains a zero
             if (!boxRow1.ContainsValue(0))
@@ -74,22 +74,22 @@ public class HiddenSinglesSolver : ISolver
             int row2Index = (i + 1) % 3;
             int row3Index = (i + 2) % 3;
 
-            Line boxRow2 = box.GetRow(row2Index);
-            Line boxRow3 = box.GetRow(row3Index);
+            Line boxRow2 = box.GetRowLine(row2Index);
+            Line boxRow3 = box.GetRowLine(row3Index);
 
             // get all values in box
             Line boxLine = box.AsLine();
 
             // neighboring boxes
             // horizontal adjacent box 1 -- rows
-            Line ahnb1Row1 = ahnb1.GetRow(row1Index);
-            Line ahnb1Row2 = ahnb1.GetRow(row2Index);
-            Line ahnb1Row3 = ahnb1.GetRow(row3Index);
+            Line ahnb1Row1 = ahnb1.GetRowLine(row1Index);
+            Line ahnb1Row2 = ahnb1.GetRowLine(row2Index);
+            Line ahnb1Row3 = ahnb1.GetRowLine(row3Index);
 
             // horizontal adjacent box 2 -- rows
-            Line ahnb2Row1 = ahnb1.GetRow(row1Index);
-            Line ahnb2Row2 = ahnb2.GetRow(row2Index);
-            Line ahnb2Row3 = ahnb2.GetRow(row3Index);
+            Line ahnb2Row1 = ahnb1.GetRowLine(row1Index);
+            Line ahnb2Row2 = ahnb2.GetRowLine(row2Index);
+            Line ahnb2Row3 = ahnb2.GetRowLine(row3Index);
 
             // determine union of values of rows
             ReadOnlySpan<int> adjRow2Union = ahnb1Row2.Union(ahnb2Row2);
@@ -132,19 +132,19 @@ public class HiddenSinglesSolver : ISolver
                 int col3Index = (y + 2) % 3;
 
                 // baseline box
-                Line boxCol1 = box.GetColumn(col1Index);
-                Line boxCol2 = box.GetColumn(col2Index);
-                Line boxCol3 = box.GetColumn(col3Index);
+                Line boxCol1 = box.GetColumnLine(col1Index);
+                Line boxCol2 = box.GetColumnLine(col2Index);
+                Line boxCol3 = box.GetColumnLine(col3Index);
 
                 // vertical adjacent box 1 -- cols
-                Line avnb1Col1 = avnb1.GetColumn(col1Index);
-                Line avnb1Col2 = avnb1.GetColumn(col2Index);
-                Line avnb1Col3 = avnb1.GetColumn(col3Index);
+                Line avnb1Col1 = avnb1.GetColumnLine(col1Index);
+                Line avnb1Col2 = avnb1.GetColumnLine(col2Index);
+                Line avnb1Col3 = avnb1.GetColumnLine(col3Index);
 
                 // vertical adjacent box 2 -- cols
-                Line avnb2Col1 = avnb2.GetColumn(col1Index);
-                Line avnb2Col2 = avnb2.GetColumn(col2Index);
-                Line avnb2Col3 = avnb2.GetColumn(col3Index);
+                Line avnb2Col1 = avnb2.GetColumnLine(col1Index);
+                Line avnb2Col2 = avnb2.GetColumnLine(col2Index);
+                Line avnb2Col3 = avnb2.GetColumnLine(col3Index);
 
                 // get complete column that includes the the first column of box
                 int currentColIndex = columnOffset + y;
@@ -421,8 +421,8 @@ public class HiddenSinglesSolver : ISolver
                             continue;
                         }
 
-                        var columnIndex = box.GetColumnOffset() + y;
-                        var rowIndex = box.GetRowOffset() + i;
+                        var columnIndex = box.FirstColumnIndex + y;
+                        var rowIndex = box.FirstRowIndex + i;
                         var foundSolution = 0;
 
                         // try with columns for the row
@@ -482,7 +482,7 @@ public class HiddenSinglesSolver : ISolver
                 bool CheckRowForValue(int searchValue, Box box, int row)
                 {
                     // get complete row that includes current row of box
-                    var rowIndex = box.GetRowOffset() + row;
+                    var rowIndex = box.FirstRowIndex + row;
                     //TODO: consider an overload that only returns non-zero values
                     var targetRow = _puzzle.GetRow(rowIndex);
 
@@ -493,7 +493,7 @@ public class HiddenSinglesSolver : ISolver
                 {
                     foreach(int col in cols)
                     {
-                        var targetColumn = box.GetColumn(col);
+                        var targetColumn = box.GetColumnLine(col);
                         if (targetColumn[row] != 0 ||
                             ColumnContainsValue(value, box, col))
                         {
@@ -510,7 +510,7 @@ public class HiddenSinglesSolver : ISolver
                 {
                     foreach(int row in rows)
                     {
-                        var targetRow = box.GetRow(row);
+                        var targetRow = box.GetRowLine(row);
                         if (targetRow[col] != 0 || 
                             CheckRowForValue(value, box, row))
                         {
@@ -550,7 +550,7 @@ public class HiddenSinglesSolver : ISolver
                 bool ColumnContainsValue(int searchValue, Box box, int col)
                 {
                     // get complete column that includes current column of box
-                    var colIndex = box.GetColumnOffset() + col;
+                    var colIndex = box.FirstColumnIndex + col;
                     var targetCol = _puzzle.GetColumn(colIndex);
 
                     return targetCol.Segment.Contains(searchValue);

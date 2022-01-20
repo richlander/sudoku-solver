@@ -1,3 +1,4 @@
+using sudoku_solver_extensions;
 namespace sudoku_solver;
 
 // Exposes candidates for each cell.
@@ -37,31 +38,42 @@ public class Candidates
         }
     }
 
-    public void RemoveCandidates(int index, int value)
+    public bool RemoveCandidates(int index)
+    {
+        return _candidates.Remove(index);
+    }
+
+    public void RemoveCandidates(int index, ReadOnlySpan<int> values)
     {
         int[] candidates = _candidates[index];
-        bool found = false;
 
+        // 0 index is a fake `Length` value
         if (candidates[0] == 0)
         {
             return;
         }
 
+        HashSet<int> valuesSet = new(9);
+        valuesSet.AddRange(values);
+        int nextWrite = 1;
+
         for (int i = 1; i <= candidates[0]; i++)
         {
-            if (found)
+            if (valuesSet.Contains(candidates[i]))
             {
-                candidates[i-1] = candidates[i];
+                candidates[0]--;
+                continue;
             }
-            else if (candidates[i] == value)
+
+            if (i != nextWrite)
             {
-                found = true;
+                candidates[nextWrite] = candidates[i];
             }
         }
 
-        if (found)
+        if (candidates[0] < 0)
         {
-            candidates[0] = candidates[0] - 1;
+            throw new Exception("Something wrong happened.");
         }
     }
 }

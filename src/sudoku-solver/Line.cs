@@ -12,6 +12,8 @@ public ref struct Line
 
     public int Length => Segment.Length;
 
+    public bool HasUnsolved => ContainsValue(0);
+
     public int GetUnsolvedCount()
     {
         int count = 0;

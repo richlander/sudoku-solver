@@ -117,5 +117,5 @@ public static class ReadOnlySpanExtensions
             }
         }
         return false;
-    }
+    }   
 }

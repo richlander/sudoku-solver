@@ -2,7 +2,7 @@ namespace sudoku_solver;
 
 public class BasicCandidatesSolver : ICandidateSolver
 {
-    public bool TrySolve(Puzzle puzzle, out Candidates? candidates)
+    public bool TryFindCandidates(Puzzle puzzle, [NotNullWhen(true)] out Candidates? candidates)
     {
         Dictionary<int, int[]> candy = new();
         for (int i = 0; i < 81; i++)
@@ -37,7 +37,7 @@ public class BasicCandidatesSolver : ICandidateSolver
 
         // get box that includes cell
         var boxIndex = Puzzle.GetBoxIndexForCell(index);
-        var box = puzzle.GetBox(boxIndex).AsLine();
+        var box = puzzle.GetBox(boxIndex);
 
         bool[] values = new bool[10];
         int[] missingValues = new int[10];

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using static System.Console;
+﻿global using static System.Console;
 using sudoku_solver;
 
 List<string> tests = new()
@@ -38,10 +34,19 @@ puzzle.Solvers = new List<ISolver>()
 {
     new NakedSinglesSolver(),
     new HiddenSinglesSolver(),
-    new NakedMultiplesSolver()
+    //new NakedMultiplesSolver()
 };
 
-while (puzzle.TrySolve(out Solution solution))
+// two of the candidate solvers are pre-registered
+// they are required (as infra) to make this system work
+// don't register BasicCandidatesSolver or SingleCandidatesRemainingSolver
+puzzle.CandidateSolvers = new List<ICandidateSolver>()
+{
+    new NakedMultiplesCandidatesSolver(),
+    new PointingMultiplesCandidateSolver()
+};
+
+while (puzzle.TrySolve(out Solution? solution))
 {
     if (!puzzle.Update(solution))
     {

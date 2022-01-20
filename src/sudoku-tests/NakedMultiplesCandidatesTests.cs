@@ -1,4 +1,6 @@
-public class NakedMultiplesTests
+using sudoku_solver;
+
+public class nakedMultiplesCandidatesTests
 {
     // These tests use a puzzle from: 
     // http://sudopedia.enjoysudoku.com/Valid_Test_Cases.html
@@ -35,7 +37,9 @@ public class NakedMultiplesTests
     public void FindNextSolution()
     {
         Puzzle puzzle = new(_board);
-        puzzle.AddSolver(new NakedMultiplesSolver());
-        Assert.True(puzzle.Solve() && puzzle.ToString() == _nextSolution, "A solved solution should be returned.");
+        puzzle.AddCandidateSolver(new NakedMultiplesCandidatesSolver());
+        bool result = puzzle.TryFindCandidates(out Candidates? candidates);
+
+        Assert.True(result, "A solved solution should be returned.");
     }
 }

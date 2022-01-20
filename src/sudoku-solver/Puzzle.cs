@@ -1,5 +1,5 @@
 global using ROSi = System.ReadOnlySpan<int>;
-using System.Diagnostics.CodeAnalysis;
+global using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace sudoku_solver;
@@ -55,7 +55,7 @@ public partial class Puzzle
     public Candidates? UpdateCandidates()
     {
         BasicCandidatesSolver solver = new();
-        solver.TryRemoveCandidates(this, out Candidates? candidates);
+        solver.TryFindCandidates(this, out Candidates? candidates);
         _candidates = candidates ?? throw new Exception();
         return candidates;
     }
@@ -68,10 +68,24 @@ public partial class Puzzle
         };
     }
 
+    public void AddCandidateSolver(ICandidateSolver solver)
+    {
+        CandidateSolvers = new List<ICandidateSolver>()
+        {
+            solver
+        };
+    }
+
     // Approach chosen is to collect the first solution from the solvers
     // then reset to first (assumed to be cheapest/simplest) solver.
-    public bool TrySolve(out Solution? solution)
+    public bool TrySolve([NotNullWhen(true)] out Solution? solution)
     {
+        if (Solvers is null)
+        {
+            solution = null;
+            return false;
+        }
+
         foreach(ISolver solver in Solvers)
         {
             if (solver.TrySolve(this, out solution))
@@ -84,12 +98,42 @@ public partial class Puzzle
         return false;
     }
 
+    public bool TryFindCandidates([NotNullWhen(true)] out Candidates? candidates)
+    {
+        if (CandidateSolvers is null)
+        {
+            candidates = null;
+            return false;
+        }
+
+        foreach(ICandidateSolver solver in CandidateSolvers)
+        {
+            if (solver.TryFindCandidates(this, out candidates))
+            {
+                return true;
+            }
+        }
+
+        candidates = null;
+        return false;
+    }
+
     public bool Solve()
     {
-        if (TrySolve(out Solution? solution) && solution is not null)
+        if (TrySolve(out Solution? solution))
         {
             Update(solution);
             return true;
+        }
+
+        if (TryFindCandidates(out Candidates? candidates))
+        {
+            ISolver solver = new SingleCandidateRemainingSolver();
+            while (solver.TrySolve(this, out solution))
+            {
+                Update(solution);
+                return true;
+            }
         }
 
         return false;
@@ -159,6 +203,11 @@ public partial class Puzzle
         SolvedForColumn[column]++;
         int box = GetBoxIndex(row,column);
         SolvedForBox[box]++;
+
+        if (_candidates is not null)
+        {
+            _candidates.RemoveCandidates(index);
+        }
 
         return GetBox(box).CountValidSolved() != -1 &&
             GetColumn(column).CountValidSolved() != -1 &&

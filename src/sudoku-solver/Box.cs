@@ -1,6 +1,3 @@
-using System;
-using System.Diagnostics;
-
 namespace sudoku_solver;
 
 public ref struct Box
@@ -9,20 +6,25 @@ public ref struct Box
     private int _index;
     private int _firstCellIndex;
     private int _firstRowIndex;
+    private int _firstColumnIndex;
     private int[] _horizontalNeighbors;
     private int[] _verticalNeighbors;
+    private int[] _boxPositions;
 
     public Box(Puzzle puzzle, int index)
     {
         _puzzle = puzzle;
+        _index = index;
         _firstCellIndex = Puzzle.GetFirstCellIndexForBox(index);
         _firstRowIndex = Puzzle.GetFirstRowIndexForBox(index);
-        _index = index;
+        _firstColumnIndex = Puzzle.GetFirstColumnIndexForBox(index);
         _horizontalNeighbors = Puzzle.GetBoxIndexesForHorizontalNeighbors(index);
         _verticalNeighbors = Puzzle.GetBoxIndexesForVerticalNeighbors(index);
+        _boxPositions = Puzzle.GetPositionsForBox(index);
     }
 
-    public Puzzle Puzzle => _puzzle;
+    public int FirstRowIndex => _firstRowIndex;
+    public int FirstColumnIndex => _firstColumnIndex;
     public Line FirstRow => GetRowLine(0);
     public Line InsideRow => GetRowLine(1);
     public Line LastRow => GetRowLine(2);
@@ -34,13 +36,7 @@ public ref struct Box
     public Box FirstVerticalNeighbor => _puzzle.GetBox(_verticalNeighbors[0]);
     public Box SecondVerticalNeighbor => _puzzle.GetBox(_verticalNeighbors[1]);
 
-    public int this[int i] => i switch
-    {
-        < 3 => FirstRow[i],
-        < 6 => InsideRow[i-3],
-        < 9 => LastRow[i-6],
-        _ => throw new ArgumentException()
-    };
+    public int this[int i] => _puzzle[_boxPositions[i]];
 
     public int GetUnsolvedCount() => 
             FirstRow.GetUnsolvedCount() +
@@ -149,11 +145,17 @@ public ref struct Box
     }
 
     // Rows
-    public static int FirstRowIndex(int index) => (index / 3) * 3;
+    public int GetRowStartIndex(int index) => _firstCellIndex + (index * 9);
+    
+    public ReadOnlySpan<int> GetRow(int index) => _puzzle.Board.Slice(GetRowStartIndex(index), 3);
 
     public Line GetRowLine(int index) => new Line(GetRow(index));
     
-    public ReadOnlySpan<int> GetRow(int index) => _puzzle.Board.Slice(_firstCellIndex + (9 * index), 3);
+    public bool IsRowSolved(int index)
+    {
+        int startCell = GetRowStartIndex(index);
+        return _puzzle[startCell] > 0 && _puzzle[startCell + 1] > 0 && _puzzle[startCell + 2] > 0;
+    }
 
     // Columns
     public Line GetColumnLine(int index)
@@ -173,6 +175,12 @@ public ref struct Box
 
     // Cells
     public int GetRowIndexForCell(int index) => _firstRowIndex + (index / 3);
+
+    public int[] GetRowIndices(int index)
+    {
+        int startCell = GetRowStartIndex(index);
+        return new int[] {startCell, startCell + 1, startCell + 2};
+    }
 
     public int GetColumnIndexForCell(int index) => Puzzle.GetFirstColumnIndexForBox(index) + (index % 3);
 
