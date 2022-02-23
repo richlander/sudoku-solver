@@ -34,12 +34,18 @@ public class nakedMultiplesCandidatesTests
     string _nextSolution = "79458213626..317......76..268.71.32443286......724386..2.6574.3.4.1286.7.763942.8";
 
     [Fact]
+    public void RemoveCandidates()
+    {
+        Puzzle puzzle = new(_board);
+        ICandidateSolver solver = new NakedMultiplesCandidatesSolver();
+        Assert.True(solver.TryFindCandidates(puzzle, out Candidates? candidates) && candidates[15][1] is 5 or 9, "A solved solution should be returned.");
+    }
+
+    [Fact]
     public void FindNextSolution()
     {
         Puzzle puzzle = new(_board);
         puzzle.AddCandidateSolver(new NakedMultiplesCandidatesSolver());
-        bool result = puzzle.TryFindCandidates(out Candidates? candidates);
-
-        Assert.True(result, "A solved solution should be returned.");
+        Assert.True(puzzle.TrySolve(out Solution? solution) && puzzle[15] == 7, "A solved solution should be returned.");
     }
 }

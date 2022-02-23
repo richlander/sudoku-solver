@@ -41,7 +41,7 @@ public class NakedSinglesTests
     {
         Puzzle puzzle = new(_board);
         puzzle.AddSolver(new NakedSinglesSolver());
-        Assert.True(puzzle.SolvePuzzle() && puzzle.ToString() == _completedBoard, "Puzzle should  be solved.");
+        Assert.True(puzzle.Solve() && puzzle.ToString() == _completedBoard, "Puzzle should  be solved.");
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public class NakedSinglesTests
     {
         var puzzle = new Puzzle(_board);
         var solver = new NakedSinglesSolver(puzzle);
-        Assert.True(solver.TrySolveColumn(2, out Solution solution), "Column should  be solved.");
+        Assert.True(solver.TrySolveColumn(2, out Solution? solution), "Column should  be solved.");
     }
 
     [Fact]
@@ -58,7 +58,7 @@ public class NakedSinglesTests
         var board = "3.542.81.4879.15.6.29.56374852793.416132.8957.74.6528.2413.9.655.867.192.965124.8";
         var puzzle = new Puzzle(board);
         var solver = new NakedSinglesSolver(puzzle);
-        Assert.True(solver.TrySolveRow(3, out Solution solution), "Row should  be solved.");
+        Assert.True(solver.TrySolveRow(3, out Solution? solution), "Row should  be solved.");
     }
 
     [Fact]
@@ -67,6 +67,6 @@ public class NakedSinglesTests
         var board = "3.542.81.4879.15.6.29.563748527936416132.8957.74.6528.2413.9.655.867.192.965124.8";
         var puzzle = new Puzzle(board);
         var solver = new NakedSinglesSolver(puzzle);
-        Assert.True(solver.TrySolveBox(3, out Solution solution), "Box should  be solved.");
+        Assert.True(solver.TrySolveBox(3, out Solution? solution), "Box should  be solved.");
     }
 }

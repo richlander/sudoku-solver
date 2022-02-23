@@ -36,6 +36,6 @@ public class NakedMultiplesTests
     {
         Puzzle puzzle = new(_board);
         puzzle.AddSolver(new NakedMultiplesSolver());
-        Assert.True(puzzle.Solve() && puzzle.ToString() == _nextSolution, "A solved solution should be returned.");
+        Assert.True(puzzle.TrySolve(out Solution? solution) && puzzle.ToString() == _nextSolution, "A solved solution should be returned.");
     }
 }

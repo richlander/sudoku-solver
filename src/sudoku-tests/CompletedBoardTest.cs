@@ -22,7 +22,7 @@ public class CompletedTest
     {
         var puzzle = new Puzzle(_board);
         puzzle.AddSolver(new NakedSinglesSolver());
-        Assert.False(puzzle.TrySolve(out Solution solution), "No more solutions should be available.");
-        Assert.True(puzzle.SolvePuzzle(),"Puzzle should be solved.");
+        Assert.False(puzzle.TrySolve(out Solution? solution), "No more solutions should be available.");
+        Assert.True(puzzle.Solve(),"Puzzle should be solved.");
     }
 }

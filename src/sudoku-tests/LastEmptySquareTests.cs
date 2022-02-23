@@ -39,6 +39,6 @@ public class LastEmptySquare
     {
         var puzzle = new Puzzle(_board);
         puzzle.AddSolver(new NakedSinglesSolver());
-        Assert.True(puzzle.SolvePuzzle() && puzzle.ToString() == _completeBoard, "Puzzle should be solved.");
+        Assert.True(puzzle.Solve() && puzzle.ToString() == _completeBoard, "Puzzle should be solved.");
     }
 }

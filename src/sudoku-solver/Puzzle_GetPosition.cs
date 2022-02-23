@@ -7,7 +7,7 @@ public partial class Puzzle
 
     public static int GetFirstCellIndexForBox(int index) => (index / 3) * 27 + (index % 3) * 3;
 
-    public static int GetBoxIndex(int row, int column) => (row / 3) * 3 + (column % 3);
+    public static int GetBoxIndex(int row, int column) => (row / 3) * 3 + (column / 3);
 
    public static (int row, int column) GetLocationForBoxCell(int box, int index)
     {
@@ -64,6 +64,7 @@ public partial class Puzzle
 
     // Row positions
     public static int GetRowIndexForCell(int index) => index / 9;
+
     public static int GetFirstCellIndexForRow(int index) => index * 9;
 
     public static int[] GetPositionsForRow(int index)

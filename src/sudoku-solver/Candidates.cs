@@ -22,6 +22,8 @@ public class Candidates
 
     public bool Contains(int index) => _candidates.ContainsKey(index);
 
+    public IEnumerable<int> Positions => _candidates.Keys;
+
     public void AddCandidates(int index, ReadOnlySpan<int> values)
     {
         if (_candidates.ContainsKey(index))
@@ -43,21 +45,50 @@ public class Candidates
         return _candidates.Remove(index);
     }
 
-    public void RemoveCandidates(int index, ReadOnlySpan<int> values)
+    // Update candidates list -- additive
+    public void UpdateAddCandidates(int index, ReadOnlySpan<int> values)
     {
-        int[] candidates = _candidates[index];
-
-        // 0 index is a fake `Length` value
-        if (candidates[0] == 0)
+        if (!_candidates.ContainsKey(index))
         {
+            AddCandidates(index, values);
             return;
         }
+
+        int[] candidates = _candidates[index];
+
+        HashSet<int> candidatesSet = new(9);
+        candidatesSet.AddRange(candidates);
+
+        for (int i = 0; i < values.Length; i++)
+        {
+            if (!candidatesSet.Contains(values[i]))
+            {
+                candidates[candidates[0]] = values[i];
+                candidates[0]++;
+            }
+            else
+            {
+                throw new Exception("Something went wrong here.");
+            }
+        }
+    }
+
+    // Update candidates list -- subtractive
+    public void UpdateRemoveCandidates(int index, ReadOnlySpan<int> values)
+    {
+        if (!_candidates.ContainsKey(index))
+        {
+            throw new Exception("Something went wrong here.");
+        }
+
+        int[] candidates = _candidates[index];
 
         HashSet<int> valuesSet = new(9);
         valuesSet.AddRange(values);
         int nextWrite = 1;
+        int length = candidates[0];
 
-        for (int i = 1; i <= candidates[0]; i++)
+        for (int i = 1; i <= length; i++)
         {
             if (valuesSet.Contains(candidates[i]))
             {
@@ -65,15 +96,16 @@ public class Candidates
                 continue;
             }
 
-            if (i != nextWrite)
-            {
-                candidates[nextWrite] = candidates[i];
-            }
+            candidates[nextWrite] = candidates[i];
+            nextWrite++;
         }
+    }
 
-        if (candidates[0] < 0)
+    public void UpdateRemoveCandidates(Candidates candidates)
+    {
+        foreach(int position in candidates.Positions)
         {
-            throw new Exception("Something wrong happened.");
+            UpdateRemoveCandidates(position, candidates[position]);
         }
     }
 }

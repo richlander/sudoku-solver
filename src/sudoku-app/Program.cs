@@ -3,7 +3,6 @@ using sudoku_solver;
 
 List<string> tests = new()
 {
-    "994236158638591742125487936316754289742918563589362417867125394253649871491873625",
     "974236158638591742125487936316754289742918563589362417867125394253649871491873625",
     "2564891733746159829817234565932748617128.6549468591327635147298127958634849362715",
     "3.542.81.4879.15.6.29.5637485.793.416132.8957.74.6528.2413.9.655.867.192.965124.8",
@@ -23,9 +22,14 @@ if (args.Length == 1 && args[0].Length == 81)
 {
     board = args[0];
 }
+else if (args.Length == 1 && args[0].Length == 1)
+{
+    int index = int.Parse(args[0]);
+    board = tests[index];
+}
 else
 {
-    board = tests[6];
+    board = tests[3];
 }
 
 Puzzle puzzle = new(board);
@@ -48,11 +52,6 @@ puzzle.CandidateSolvers = new List<ICandidateSolver>()
 
 while (puzzle.TrySolve(out Solution? solution))
 {
-    if (!puzzle.Update(solution))
-    {
-        WriteLine("Something is busted!");
-        break;
-    }
     string solverKind = solution.SolverKind is null ? $"{solution.Solver}" : $"{solution.Solver}:{solution.SolverKind}";
     WriteLine($"Solved cell: {solution.GetLocation()}; {solution.Value}");
     WriteLine($"Solved by: {solverKind}");

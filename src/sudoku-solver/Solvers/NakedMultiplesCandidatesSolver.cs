@@ -65,7 +65,11 @@ public class NakedMultiplesCandidatesSolver : ICandidateSolver
                 if (matches.ContainsKey(match))
                 {
                     matches[match][0]++;
-                    continue;
+
+                    if (posCandidates.Length == 2)
+                    {
+                        continue;
+                    }
                 }
                 else
                 {
@@ -90,10 +94,15 @@ public class NakedMultiplesCandidatesSolver : ICandidateSolver
         // remove multiple candidates with no multiples
         foreach (int key in matches.Keys)
         {
-            if (matches[key][0] == 1)
+            if (matches[key][0] == 0)
             {
-                matches.Remove(key);
             }
+            else if (matches[key][0] == matches[key].Length - 2)
+            {
+                continue;
+            }
+            
+            matches.Remove(key);
         }
 
         // iterate through positions again to find removal candidates
@@ -104,10 +113,14 @@ public class NakedMultiplesCandidatesSolver : ICandidateSolver
 
             foreach (ReadOnlySpan<int> match in matches.Values)
             {
-                ReadOnlySpan<int> intersection = posCandidates.Intersect(match.Slice(1, match[0]));
-                if (intersection.Length > 0)
+                ReadOnlySpan<int> intersection = posCandidates.Intersect(match.Slice(1));
+                if (posCandidates.Length == intersection.Length)
                 {
-                    nakedMultiplesCandidates.AddCandidates(position, intersection);
+                    continue;
+                }
+                else if (intersection.Length > 0)
+                {
+                    nakedMultiplesCandidates.UpdateAddCandidates(position, intersection);
                     candidatesFound = true;
                 }
             }

@@ -56,8 +56,8 @@ public partial class Puzzle
     {
         BasicCandidatesSolver solver = new();
         solver.TryFindCandidates(this, out Candidates? candidates);
-        _candidates = candidates ?? throw new Exception();
-        return candidates;
+        _candidates = candidates ?? new Candidates();
+        return _candidates;
     }
 
     public void AddSolver(ISolver solver)
@@ -76,72 +76,52 @@ public partial class Puzzle
         };
     }
 
-    // Approach chosen is to collect the first solution from the solvers
-    // then reset to first (assumed to be cheapest/simplest) solver.
     public bool TrySolve([NotNullWhen(true)] out Solution? solution)
     {
-        if (Solvers is null)
+        if (Solvers is not null)
         {
-            solution = null;
-            return false;
-        }
-
-        foreach(ISolver solver in Solvers)
-        {
-            if (solver.TrySolve(this, out solution))
+            foreach(ISolver solver in Solvers)
             {
-                return true;
+                if (solver.TrySolve(this, out solution))
+                {
+                    Update(solution);
+                    return true;
+                }
             }
         }
-    
+
+        if (CandidateSolvers is not null &&
+            Candidates.Positions.Count() > 0)
+        {
+            bool foundCandidates = false;
+            foreach(ICandidateSolver solver in CandidateSolvers)
+            {
+                if (solver.TryFindCandidates(this, out Candidates? candidates))
+                {
+                    foundCandidates = true;
+                    Candidates.UpdateRemoveCandidates(candidates);
+                }
+            }
+
+            if (foundCandidates)
+            {
+                ISolver solver = new SingleCandidateRemainingSolver();
+                if (solver.TrySolve(this, out solution))
+                {
+                    Update(solution);
+                    return true;
+                }
+            }
+
+        }
+
         solution = null;
-        return false;
-    }
-
-    public bool TryFindCandidates([NotNullWhen(true)] out Candidates? candidates)
-    {
-        if (CandidateSolvers is null)
-        {
-            candidates = null;
-            return false;
-        }
-
-        foreach(ICandidateSolver solver in CandidateSolvers)
-        {
-            if (solver.TryFindCandidates(this, out candidates))
-            {
-                return true;
-            }
-        }
-
-        candidates = null;
         return false;
     }
 
     public bool Solve()
     {
-        if (TrySolve(out Solution? solution))
-        {
-            Update(solution);
-            return true;
-        }
-
-        if (TryFindCandidates(out Candidates? candidates))
-        {
-            ISolver solver = new SingleCandidateRemainingSolver();
-            while (solver.TrySolve(this, out solution))
-            {
-                Update(solution);
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public bool SolvePuzzle()
-    {
-        while(Solve())
+        while(TrySolve(out Solution? solution))
         {
         }
 
