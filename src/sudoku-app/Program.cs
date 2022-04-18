@@ -46,11 +46,12 @@ puzzle.Solvers = new List<ISolver>()
 // don't register BasicCandidatesSolver or SingleCandidatesRemainingSolver
 puzzle.CandidateSolvers = new List<ICandidateSolver>()
 {
+   // new HiddenSinglesCandidatesSolver(),
     new NakedMultiplesCandidatesSolver(),
     new PointingMultiplesCandidateSolver()
 };
 
-while (puzzle.TrySolve(out Solution? solution))
+while (!puzzle.IsSolved && puzzle.TrySolve(out Solution? solution))
 {
     string solverKind = solution.SolverKind is null ? $"{solution.Solver}" : $"{solution.Solver}:{solution.SolverKind}";
     WriteLine($"Solved cell: {solution.GetLocation()}; {solution.Value}");
@@ -60,11 +61,9 @@ while (puzzle.TrySolve(out Solution? solution))
     WriteLine();
 }
 
-if (puzzle.IsSolved)
-{
-    WriteLine("Puzzle is solved!");
-}
-
-
-WriteLine($"Solved cells: {puzzle.Solved}; Found: {puzzle.Solved - puzzle.InitialSolved}; Remaining: {81 - puzzle.Solved}");
-WriteLine(puzzle);
+WriteLine($"Puzzle: {puzzle}");
+string state = puzzle.IsSolved ? "solved" : "unsolved";
+WriteLine($"Puzzle is {state}.");
+WriteLine($"Initial puzzle: {puzzle.InitialSolved}; Remaining cells: {81 - puzzle.InitialSolved}");
+WriteLine($"Final puzzle  : {puzzle.Solved}; Found cells    : {puzzle.Solved - puzzle.InitialSolved}");
+WriteLine();

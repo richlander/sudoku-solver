@@ -46,19 +46,10 @@ public partial class Puzzle
     public int this[int i] => _board[i];
 
     public ReadOnlySpan<int> Board => _board.AsSpan();
-    public Candidates Candidates => _candidates ?? UpdateCandidates();
+    public Candidates Candidates;
     public IEnumerable<ISolver> Solvers {get; set;}
 
     public IEnumerable<ICandidateSolver> CandidateSolvers {get; set;}
-
-    [MemberNotNull(nameof(_candidates))]
-    public Candidates? UpdateCandidates()
-    {
-        BasicCandidatesSolver solver = new();
-        solver.TryFindCandidates(this, out Candidates? candidates);
-        _candidates = candidates ?? new Candidates();
-        return _candidates;
-    }
 
     public void AddSolver(ISolver solver)
     {
@@ -78,15 +69,19 @@ public partial class Puzzle
 
     public bool TrySolve([NotNullWhen(true)] out Solution? solution)
     {
-        if (Solvers is not null)
+        solution = null;
+
+        if (Solvers is null)
         {
-            foreach(ISolver solver in Solvers)
+            return false;
+        }
+
+        foreach(ISolver solver in Solvers)
+        {
+            if (solver.TrySolve(this, out solution))
             {
-                if (solver.TrySolve(this, out solution))
-                {
-                    Update(solution);
-                    return true;
-                }
+                Update(solution);
+                return true;
             }
         }
 
@@ -115,7 +110,6 @@ public partial class Puzzle
 
         }
 
-        solution = null;
         return false;
     }
 
@@ -143,27 +137,6 @@ public partial class Puzzle
         }
 
         return true;
-    }
-
-    private void UpdateCounts()
-    {
-        Solved = 0;
-        SolvedForBox = new int[9];
-        SolvedForRow = new int[9];
-        SolvedForColumn = new int[9];
-
-        for (int i = 0; i < 9; i++)
-        {
-            // Process box i
-            SolvedForBox[i] = GetBox(i).CountValidSolved();
-            Solved += SolvedForBox[i];
-            // Process row i
-            SolvedForRow[i] = GetRow(i).CountValidSolved();
-            // Process column i
-            SolvedForColumn[i] = GetColumn(i).CountValidSolved();
-        }
-
-        InitialSolved = Solved;
     }
 
     public bool Update(Solution solution)

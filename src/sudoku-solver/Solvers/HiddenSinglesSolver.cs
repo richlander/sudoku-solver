@@ -96,15 +96,15 @@ public class HiddenSinglesSolver : ISolver
             ReadOnlySpan<int> adjRow3Union = ahnb1Row3.Union(ahnb2Row3);
 
             // get complete row that includes current row of box
-            int currentRowIndex = rowOffset + i;
-            Line currentRow = _puzzle.GetRow(currentRowIndex);
+            int currentPuzzleRowIndex = rowOffset + i;
+            Line currentPuzzleRow = _puzzle.GetRow(currentPuzzleRowIndex);
 
             // calculate full set of illegal values for row 1
-            ReadOnlySpan<int> boxRow1IllegalValues = boxLine.Union(currentRow);
+            ReadOnlySpan<int> illegalValues = boxLine.Union(currentPuzzleRow);
 
             // determine disjoint set with baseline row -- looking for values in that row
-            ReadOnlySpan<int> row2Candidates = adjRow2Union.DisjointSet(boxRow1IllegalValues);
-            ReadOnlySpan<int> row3Candidates = adjRow3Union.DisjointSet(boxRow1IllegalValues);
+            ReadOnlySpan<int> row2Candidates = adjRow2Union.DisjointSet(illegalValues);
+            ReadOnlySpan<int> row3Candidates = adjRow3Union.DisjointSet(illegalValues);
             ReadOnlySpan<int> boxRow1Candidates = row2Candidates.Intersect(row3Candidates);
 
             // determine if rows on their own present a solution
@@ -306,7 +306,7 @@ public class HiddenSinglesSolver : ISolver
                     foreach (var candidate in candidates1)
                     {
                         if (!boxLine.ContainsValue(candidate) &&
-                        !currentRow.ContainsValue(candidate) &&
+                        !currentPuzzleRow.ContainsValue(candidate) &&
                         CheckForValueInCellOrRow(candidate,box,col1Index,row2Index,row3Index) &&
                         CheckForValueInCellOrRow(candidate,avnb2,col1Index,0,1,2)
                         )
@@ -322,7 +322,7 @@ public class HiddenSinglesSolver : ISolver
                     foreach (var candidate in candidates2)
                     {
                         if (!boxLine.ContainsValue(candidate) &&
-                        !currentRow.ContainsValue(candidate) &&
+                        !currentPuzzleRow.ContainsValue(candidate) &&
                         CheckForValueInCellOrRow(candidate,box,col1Index,row2Index,row3Index) &&
                         CheckForValueInCellOrRow(candidate,avnb1,col1Index,0,1,2)
                         )
@@ -337,7 +337,7 @@ public class HiddenSinglesSolver : ISolver
                 {
                     var solverKind = nameof(Strategy.RowLastPossibleSlot);
 
-                    var candidates1 = ahnb1.AsLine().DisjointSet(currentRow);
+                    var candidates1 = ahnb1.AsLine().DisjointSet(currentPuzzleRow);
 
                     foreach(var candidate in candidates1)
                     {
@@ -353,7 +353,7 @@ public class HiddenSinglesSolver : ISolver
                         }
                     }
 
-                    var candidates2 = ahnb2.AsLine().DisjointSet(currentRow);
+                    var candidates2 = ahnb2.AsLine().DisjointSet(currentPuzzleRow);
 
                     foreach(var candidate in candidates2)
                     {
@@ -380,7 +380,7 @@ public class HiddenSinglesSolver : ISolver
                         {
                             var value = missingValues[k];
                             var otherValue = missingValues[(k+1) % 2];
-                            if (currentRow.ContainsValue(value) &&
+                            if (currentPuzzleRow.ContainsValue(value) &&
                                 !boxLine.ContainsValue(otherValue))
                             {
                                 solution = GetSolution(index, i, y, otherValue, solverKind);
@@ -393,9 +393,9 @@ public class HiddenSinglesSolver : ISolver
                 {
                     var solverKind = nameof(Strategy.RowLastTwoPossibleSlots);
 
-                    if (currentRow.GetUnsolvedCount() == 2)
+                    if (currentPuzzleRow.GetUnsolvedCount() == 2)
                     {
-                        var missingValues = currentRow.GetMissingValues();
+                        var missingValues = currentPuzzleRow.GetMissingValues();
                         for(int k = 0; k < 2; k++)
                         {
                             var value = missingValues[k];
@@ -412,7 +412,7 @@ public class HiddenSinglesSolver : ISolver
 
                 {
                     var solverKind = nameof(Strategy.LastInRowOrColumn);
-                    (var valuesFound, var values) = FindMissingValues(currentCol,currentRow);
+                    (var valuesFound, var values) = FindMissingValues(currentCol,currentPuzzleRow);
 
                     for (var j = 1; j < 10;j++)
                     {
@@ -428,7 +428,7 @@ public class HiddenSinglesSolver : ISolver
                         // try with columns for the row
                         for (int l = 0; l < 9;l++)
                         {
-                            var cell = currentRow[l];
+                            var cell = currentPuzzleRow[l];
                             if (cell != 0 || l == columnIndex)
                             {
                                 continue;
