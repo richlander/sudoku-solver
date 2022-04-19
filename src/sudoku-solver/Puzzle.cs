@@ -71,13 +71,19 @@ public partial class Puzzle
     {
         solution = null;
 
-        if (Solvers is null)
+        bool foundCandidates = false;
+        foreach(ICandidateSolver solver in CandidateSolvers)
         {
-            return false;
+            if (solver.TryFindCandidates(this, out Candidates? candidates))
+            {
+                foundCandidates = true;
+                Candidates.UpdateRemoveCandidates(candidates);
+            }
         }
 
-        foreach(ISolver solver in Solvers)
+        if (foundCandidates)
         {
+            ISolver solver = new SingleCandidateRemainingSolver();
             if (solver.TrySolve(this, out solution))
             {
                 Update(solution);
@@ -85,30 +91,6 @@ public partial class Puzzle
             }
         }
 
-        if (CandidateSolvers is not null &&
-            Candidates.Positions.Count() > 0)
-        {
-            bool foundCandidates = false;
-            foreach(ICandidateSolver solver in CandidateSolvers)
-            {
-                if (solver.TryFindCandidates(this, out Candidates? candidates))
-                {
-                    foundCandidates = true;
-                    Candidates.UpdateRemoveCandidates(candidates);
-                }
-            }
-
-            if (foundCandidates)
-            {
-                ISolver solver = new SingleCandidateRemainingSolver();
-                if (solver.TrySolve(this, out solution))
-                {
-                    Update(solution);
-                    return true;
-                }
-            }
-
-        }
 
         return false;
     }

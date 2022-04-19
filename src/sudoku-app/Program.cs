@@ -36,8 +36,8 @@ Puzzle puzzle = new(board);
 
 puzzle.Solvers = new List<ISolver>()
 {
-    new NakedSinglesSolver(),
-    new HiddenSinglesSolver(),
+    //new NakedSinglesSolver(),
+    //new HiddenSinglesSolver(),
     //new NakedMultiplesSolver()
 };
 
